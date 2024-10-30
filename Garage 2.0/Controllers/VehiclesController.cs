@@ -25,6 +25,33 @@ namespace Garage_2._0.Controllers
             return View(await _context.Vehicle.ToListAsync());
         }
 
+        // Start Feature: Search area - mohammad
+        public async Task<IActionResult> SearchByRegNumber(string searchField)
+        {
+            if (!string.IsNullOrEmpty(searchField))
+            {
+                var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField))
+                .Select(v => new Vehicle
+                {
+                    Id = v.Id,
+                    RegNr = v.RegNr,
+                    Brand = v.Brand,
+                    Model = v.Model,
+                    VehicleType = v.VehicleType,
+                    Color = v.Color,
+                    Wheels = v.Wheels,
+                    ArriveTime = v.ArriveTime,
+                });
+                return View("Index", await results.ToListAsync());
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        }
+        // End Feature: Search area - mohammad
+
+
         // GET: Vehicles/Details/5
         public async Task<IActionResult> Details(int? id)
         {
