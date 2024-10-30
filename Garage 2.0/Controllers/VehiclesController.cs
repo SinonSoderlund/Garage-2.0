@@ -59,10 +59,15 @@ namespace Garage_2._0.Controllers
         {
             if (ModelState.IsValid)
             {
-                Vehicle toAdd = new Vehicle(vehicle);
-                _context.Add(toAdd);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (await EnsureUnique(vehicle))
+                {
+                    Vehicle toAdd = new Vehicle(vehicle);
+                    _context.Add(toAdd);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                    ModelState.AddModelError("regNr", "Registration number must be unique");
             }
             return View(vehicle);
         }
