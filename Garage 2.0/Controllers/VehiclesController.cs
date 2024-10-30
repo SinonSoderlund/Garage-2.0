@@ -67,6 +67,18 @@ namespace Garage_2._0.Controllers
             return View(vehicle);
         }
 
+        /// <summary>
+        /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
+        /// </summary>
+        /// <param name="toVerify">DetailViewModel to be verified</param>
+        /// <param name="Id">Id of edited object, leave empty for newly created objects</param>
+        /// <returns></returns>
+        public async Task<bool> EnsureUnique(DetailViewModel toVerify, int Id = -1)
+        {
+            toVerify.Id = Id;
+            return await _context.Vehicle.FirstOrDefaultAsync(v => (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
+        }
+
         // GET: Vehicles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
