@@ -6,6 +6,8 @@ namespace Garage_2._0.Models.ViewModels
     public class DetailViewModel
     {
         public int Id { get; set; }
+        [DisplayName("Number Of Wheels")]
+        [Range(0, uint.MaxValue)]
         public uint Wheels { get; set; }
 
         [DisplayName("Time of Arrival")]

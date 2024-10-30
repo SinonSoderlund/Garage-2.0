@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Garage_2._0.Data;
 using Garage_2._0.Models.Entities;
+using Garage_2._0.Models.ViewModels;
 
 namespace Garage_2._0.Controllers
 {
@@ -43,22 +44,23 @@ namespace Garage_2._0.Controllers
             return View(vehicle);
         }
 
-        // GET: Vehicles/Create
-        public IActionResult Create()
+        // GET: Vehicles/ParkVehicle
+        public IActionResult ParkVehicle()
         {
             return View();
         }
 
-        // POST: Vehicles/Create
+        // POST: Vehicles/ParkVehicle
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Wheels,ArriveTime,Color,RegNr,Model,Brand,VehicleType")] Vehicle vehicle)
+        public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(vehicle);
+                Vehicle toAdd = new Vehicle(vehicle);
+                _context.Add(toAdd);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
