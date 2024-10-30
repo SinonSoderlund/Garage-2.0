@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Garage_2._0.Data;
 using Garage_2._0.Models.Entities;
+using Garage_2._0.Models.ViewModels;
 
 namespace Garage_2._0.Controllers
 {
@@ -63,6 +64,18 @@ namespace Garage_2._0.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return View(vehicle);
+        }
+
+        /// <summary>
+        /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
+        /// </summary>
+        /// <param name="toVerify">DetailViewModel to be verified</param>
+        /// <param name="Id">Id of edited object, leave empty for newly created objects</param>
+        /// <returns></returns>
+        public async Task<bool> EnsureUnique(DetailViewModel toVerify, int Id = -1)
+        {
+            toVerify.Id = Id;
+            return await _context.Vehicle.FirstOrDefaultAsync(v => (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
         }
 
         // GET: Vehicles/Edit/5
