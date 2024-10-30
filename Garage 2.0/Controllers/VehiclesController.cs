@@ -52,6 +52,27 @@ namespace Garage_2._0.Controllers
         }
         // End Feature: Search area - mohammad
 
+        // Start Feature: sort by date - mohammad
+
+        public async Task<IActionResult> SortByDateAscending()
+        {
+            var sortedVehicles = await _context.Vehicle
+                .OrderBy(v=>v.ArriveTime)
+                .ToListAsync();
+            return View("Index", sortedVehicles);
+        }
+
+        public async Task<IActionResult> SortByDateDescending()
+        {
+            var sortedVehicles = await _context.Vehicle
+                .OrderByDescending(v => v.ArriveTime)
+                .ToListAsync();
+            return View("Index", sortedVehicles);
+        }
+
+        // End Feature: sort by date - mohammad
+
+
 
         // GET: Vehicles/Details/5
         public async Task<IActionResult> Details(int? id)
