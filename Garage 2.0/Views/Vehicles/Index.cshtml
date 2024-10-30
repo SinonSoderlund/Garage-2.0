@@ -5,7 +5,15 @@
 }
 
 <h1>Index</h1>
-
+<!-- Start: Adding Search field-->
+<form asp-action="SearchByRegNumber" method="get" class="mb-3">
+    <label for="search">Search by Registration number:</label>
+    <div class="input-group mb-3">
+        <input type="text" name="searchField" class="form-control" placeholder="Enter registration number" />
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+    </div>
+</form>
+<!-- End: Adding Search field-->
 <p>
     <a asp-action="ParkVehicle">Park Vehicle</a>
 </p>
