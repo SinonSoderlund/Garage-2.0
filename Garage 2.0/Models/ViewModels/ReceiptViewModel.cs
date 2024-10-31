@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using Garage_2._0.Models.Entities;
 
 namespace Garage_2._0.Models.ViewModels
 {
@@ -26,12 +27,19 @@ namespace Garage_2._0.Models.ViewModels
 
         [DisplayName("Type of Vehicle")]
         public VehicleType VehicleType { get; set; }
-
         public TimeSpan ParkedDuration
         {
             get
             {
                 return DateTime.Now - ArriveTime;
+            }
+        }
+
+        public string ParkedDurationText
+        {
+            get
+            {
+                return ParkTime();
             }
         }
 
@@ -41,5 +49,110 @@ namespace Garage_2._0.Models.ViewModels
 
         [DisplayName("Total Price")]
         public Decimal Price { get; set; }
+
+        public string PriceText { get; set; }
+
+        /// <summary>
+        /// Copies vehicle data into recept and then fills out recept fields
+        /// </summary>
+        /// <param name="vehicle">Vehicle to be copied</param>
+        /// <param name="price">hourly price for parking</param>
+
+        public ReceiptViewModel(Vehicle vehicle, decimal price)
+        {
+            Id = vehicle.Id;
+            Brand = vehicle.Brand;
+            ArriveTime = vehicle.ArriveTime;
+            RegNr = vehicle.RegNr;
+            Color = vehicle.Color;
+            Wheels = vehicle.Wheels;
+            Model = vehicle.Model;
+            VehicleType = vehicle.VehicleType;
+            CheckoutTime = DateTime.Now;
+            Price = getPrice(ParkedDuration.Ticks, price);
+            PriceText = Price.ToString("C");
+        }
+
+        /// <summary>
+        /// Outputs time parked as string
+        /// </summary>
+        /// <returns></returns>
+        private string ParkTime()
+        {
+            TimeSpan t = ParkedDuration;
+            return $"{t.Days} Days, {t.Hours} Hours, {t.Minutes} Minutes, {t.Seconds} Seconds.";
+        }
+        /// <summary>
+        /// Calculates the cost of parking
+        /// </summary>
+        /// <param name="time">time in timespand ticks for parking duration</param>
+        /// <param name="price">hourly price of parking</param>
+        /// <returns>cost of parking</returns>
+        private decimal getPrice(long time, decimal price)
+        {
+            decimal dTime = Convert.ToDecimal(time);
+            decimal dDevide = Convert.ToDecimal(TimeSpan.TicksPerHour);
+            return (dTime/dDevide)*price;
+        }
+
+
+        /// <summary>
+        /// Default constructor, sets strings to string.Empty and other fields to default.
+        /// </summary>
+        public ReceiptViewModel()
+        {
+            Brand = string.Empty;
+            ArriveTime = default;
+            RegNr = string.Empty;
+            Color = string.Empty;
+            Wheels = default;
+            Model = string.Empty;
+            VehicleType = default;
+            CheckoutTime = default;
+            Price = default;
+            PriceText = string.Empty;
+        }
+
+        /// <summary>
+        /// Parameter constructor
+        /// </summary>
+        /// <param name="brand">Vehicle brand, max 20 chars</param>
+        /// <param name="regNr">Vehicle registration number, max 20 chars</param>
+        /// <param name="color">vehicle color, max 20 chars</param>
+        /// <param name="wheels">Vehicles number of wheels</param>
+        /// <param name="model">Vehicle model/make, max 20 chars</param>
+        /// <param name="vehicleType">Vehicles vheicle type</param>
+        public ReceiptViewModel(string brand, string regNr, string color, uint wheels, string model, VehicleType vehicleType, decimal price)
+        {
+            Brand = brand;
+            ArriveTime = DateTime.Now;
+            RegNr = regNr;
+            Color = color;
+            Wheels = wheels;
+            Model = model;
+            VehicleType = vehicleType;
+            CheckoutTime = DateTime.Now;
+            Price = getPrice(ParkedDuration.Ticks, price);
+            PriceText = Price.ToString("C");
+
+        }
+        /// <summary>
+        /// Vehicle copy constructor
+        /// </summary>
+        /// <param name="receipt">receipt to be copied</param>
+        public ReceiptViewModel(ReceiptViewModel receipt)
+        {
+            Id = receipt.Id;
+            Brand = receipt.Brand;
+            ArriveTime = DateTime.Now;
+            RegNr = receipt.RegNr;
+            Color = receipt.Color;
+            Wheels = receipt.Wheels;
+            Model = receipt.Model;
+            VehicleType = receipt.VehicleType;
+            CheckoutTime = receipt.CheckoutTime;
+            Price = receipt.Price;
+            PriceText = receipt.PriceText;
+        }
     }
 }

@@ -206,7 +206,7 @@ namespace Garage_2._0.Controllers
         }
 
         // GET: Vehicles/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> CheckOut(int? id)
         {
             if (id == null)
             {
@@ -219,19 +219,41 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
-            TempData["Message"] = "Vehicle successfully removed."; // feedback message
-            return View(vehicle);
+            DetailViewModel output = new DetailViewModel(vehicle);
+
+            return View(output);
         }
 
-        // POST: Vehicles/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: Vehicles/CheckOut/5
+        [HttpPost, ActionName("CheckOut")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> CheckOutConfirmed(int id)
         {
             var vehicle = await _context.Vehicle.FindAsync(id);
             if (vehicle != null)
             {
                 _context.Vehicle.Remove(vehicle);
+            }
+            TempData["Message"] = "Vehicle successfully removed."; // feedback message
+            return View(vehicle);
+        }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: Vehicles/GetReceipt/5
+        [HttpPost, ActionName("GetReceipt")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GetReceipt(int id)
+        {
+            var vehicle = await _context.Vehicle.FindAsync(id);
+            if (vehicle != null)
+            {
+                _context.Vehicle.Remove(vehicle);
+                await _context.SaveChangesAsync();
+                ReceiptViewModel output = new ReceiptViewModel(vehicle, 16.64M);
+                return View(output);
             }
 
             await _context.SaveChangesAsync();
