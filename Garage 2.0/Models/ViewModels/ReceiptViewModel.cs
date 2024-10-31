@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using Garage_2._0.Models.Entities;
 
 namespace Garage_2._0.Models.ViewModels
 {
@@ -41,5 +42,20 @@ namespace Garage_2._0.Models.ViewModels
 
         [DisplayName("Total Price")]
         public Decimal Price { get; set; }
+
+        /// <summary>
+        /// Vehicle copy constructor
+        /// </summary>
+        /// <param name="vehicle">Vehicle to be copied</param>
+        public ReceiptViewModel(Vehicle vehicle)
+        {
+            Brand = vehicle.Brand;
+            ArriveTime = DateTime.Now;
+            RegNr = vehicle.RegNr;
+            Color = vehicle.Color;
+            Wheels = vehicle.Wheels;
+            Model = vehicle.Model;
+            VehicleType = vehicle.VehicleType;
+        }
     }
 }
