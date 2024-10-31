@@ -60,8 +60,16 @@ namespace Garage_2._0.Controllers
         public async Task<IActionResult> SortByDateAscending()
         {
             var sortedVehicles = await _context.Vehicle
-                .OrderBy(v=>v.ArriveTime)
+                .OrderBy(v => v.ArriveTime)
+                .Select(v => new IndexViewModel()
+                {
+                    Id = v.Id,
+                    RegNr = v.RegNr,
+                    VehicleType = v.VehicleType,
+                    ArriveTime = v.ArriveTime
+                })
                 .ToListAsync();
+
             return View("Index", sortedVehicles);
         }
 
@@ -69,7 +77,15 @@ namespace Garage_2._0.Controllers
         {
             var sortedVehicles = await _context.Vehicle
                 .OrderByDescending(v => v.ArriveTime)
+                .Select(v => new IndexViewModel()
+                {
+                    Id = v.Id,
+                    RegNr = v.RegNr,
+                    VehicleType = v.VehicleType,
+                    ArriveTime = v.ArriveTime
+                })
                 .ToListAsync();
+
             return View("Index", sortedVehicles);
         }
 
