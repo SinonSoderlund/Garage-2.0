@@ -23,7 +23,14 @@ namespace Garage_2._0.Controllers
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Vehicle.ToListAsync());
+            var model = await _context.Vehicle.Select(v => new IndexViewModel()
+            {
+                Id = v.Id,
+                VehicleType = v.VehicleType,
+                RegNr = v.RegNr,
+                ArriveTime = v.ArriveTime
+            }).ToListAsync();
+            return View(model);
         }
 
         // Start Feature: Search area
@@ -32,15 +39,11 @@ namespace Garage_2._0.Controllers
             if (!string.IsNullOrEmpty(searchField))
             {
                 var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField))
-                .Select(v => new Vehicle
+                .Select(v => new IndexViewModel()
                 {
                     Id = v.Id,
                     RegNr = v.RegNr,
-                    Brand = v.Brand,
-                    Model = v.Model,
                     VehicleType = v.VehicleType,
-                    Color = v.Color,
-                    Wheels = v.Wheels,
                     ArriveTime = v.ArriveTime,
                 });
                 return View("Index", await results.ToListAsync());
@@ -88,8 +91,9 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
+            DetailViewModel output = new DetailViewModel(vehicle);
 
-            return View(vehicle);
+            return View(output);
         }
 
         // GET: Vehicles/ParkVehicle
