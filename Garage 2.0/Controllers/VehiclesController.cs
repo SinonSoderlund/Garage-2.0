@@ -234,9 +234,6 @@ namespace Garage_2._0.Controllers
             {
                 _context.Vehicle.Remove(vehicle);
             }
-            TempData["Message"] = "Vehicle successfully removed."; // feedback message
-            return View(vehicle);
-        }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
