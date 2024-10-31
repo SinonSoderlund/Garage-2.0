@@ -4,6 +4,8 @@ namespace Garage_2._0.Models.ViewModels
 {
     public class IndexViewModel
     {
+        public int Id { get; set; }
+        
         [DisplayName("Type of Vehicle")]
         public VehicleType VehicleType { get; set; }
 
