@@ -196,6 +196,24 @@ namespace Garage_2._0.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // POST: Vehicles/CheckOut/5
+        [HttpPost, ActionName("GetReceipt")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GetReceipt(int id)
+        {
+            var vehicle = await _context.Vehicle.FindAsync(id);
+            if (vehicle != null)
+            {
+                _context.Vehicle.Remove(vehicle);
+                await _context.SaveChangesAsync();
+                ReceiptViewModel output = new ReceiptViewModel(vehicle, 16.64M);
+                return View(output);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
         private bool VehicleExists(int id)
         {
             return _context.Vehicle.Any(e => e.Id == id);
