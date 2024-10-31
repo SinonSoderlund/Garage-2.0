@@ -124,12 +124,16 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
+
+            // Hämtar vår enum lista med ViewBag
+            ViewBag.VehicleTypes = new SelectList(Enum.GetValues(typeof(VehicleType))
+                .Cast<VehicleType>()
+                .Select(v => new { Id = v, Name = v.ToString() }), "Id", "Name");
+
             return View(vehicle);
         }
 
-        // POST: Vehicles/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Vehicles/Edit/5 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Wheels,ArriveTime,Color,RegNr,Model,Brand,VehicleType")] Vehicle vehicle)
@@ -143,7 +147,22 @@ namespace Garage_2._0.Controllers
             {
                 try
                 {
-                    _context.Update(vehicle);
+                    // Hämta det befintliga fordonet från databasen
+                    var parkedVehicle = await _context.Vehicle.FindAsync(id);
+                    if (parkedVehicle == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Uppdatera de fält som kan ändras (regNr ska hållas unik)
+                    parkedVehicle.Wheels = vehicle.Wheels;
+                    parkedVehicle.ArriveTime = vehicle.ArriveTime;
+                    parkedVehicle.Color = vehicle.Color;
+                    parkedVehicle.Model = vehicle.Model;
+                    parkedVehicle.Brand = vehicle.Brand;
+                    parkedVehicle.VehicleType = vehicle.VehicleType;
+
+                    _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
