@@ -39,7 +39,7 @@ namespace Garage_2._0.Models.ViewModels
         {
             Id = vehicle.Id;
             Brand = vehicle.Brand;
-            ArriveTime = DateTime.Now;
+            ArriveTime = vehicle.ArriveTime;
             RegNr = vehicle.RegNr;
             Color = vehicle.Color;
             Wheels = vehicle.Wheels;
