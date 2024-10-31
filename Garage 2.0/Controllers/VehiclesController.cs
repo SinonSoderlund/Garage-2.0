@@ -144,40 +144,27 @@ namespace Garage_2._0.Controllers
             }
 
             if (ModelState.IsValid)
-            {
-                try
-                {
-                    // Hämta det befintliga fordonet från databasen
-                    var parkedVehicle = await _context.Vehicle.FindAsync(id);
-                    if (parkedVehicle == null)
-                    {
-                        return NotFound();
-                    }
 
-                    // Uppdatera de fält som kan ändras (regNr ska hållas unik)
-                    parkedVehicle.Wheels = vehicle.Wheels;
-                    parkedVehicle.ArriveTime = vehicle.ArriveTime;
-                    parkedVehicle.Color = vehicle.Color;
-                    parkedVehicle.Model = vehicle.Model;
-                    parkedVehicle.Brand = vehicle.Brand;
-                    parkedVehicle.VehicleType = vehicle.VehicleType;
-
-                    _context.Update(parkedVehicle);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
+                if (ModelState.IsValid)
                 {
-                    if (!VehicleExists(vehicle.Id))
+                    try
                     {
-                        return NotFound();
+                        _context.Update(vehicle);
+                        await _context.SaveChangesAsync();
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
-                        throw;
+                        if (!VehicleExists(vehicle.Id))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
-            }
             return View(vehicle);
         }
 
