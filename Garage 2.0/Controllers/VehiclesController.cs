@@ -180,12 +180,12 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
-            //DetailViewModel output = new DetailViewModel(vehicle);
+            DetailViewModel output = new DetailViewModel(vehicle);
 
-            return View(new DetailViewModel());
+            return View(output);
         }
 
-        // POST: Vehicles/Delete/5
+        // POST: Vehicles/CheckOut/5
         [HttpPost, ActionName("CheckOut")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckOutConfirmed(int id)
@@ -200,7 +200,7 @@ namespace Garage_2._0.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Vehicles/CheckOut/5
+        // POST: Vehicles/GetReceipt/5
         [HttpPost, ActionName("GetReceipt")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetReceipt(int id)

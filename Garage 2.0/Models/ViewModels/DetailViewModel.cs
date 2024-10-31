@@ -46,5 +46,18 @@ namespace Garage_2._0.Models.ViewModels
             Model = vehicle.Model;
             VehicleType = vehicle.VehicleType;
         }
+        /// <summary>
+        /// Default constructor, sets strings to string.Empty and other fields to default.
+        /// </summary>
+        public DetailViewModel()
+        {
+            Brand = string.Empty;
+            ArriveTime = default;
+            RegNr = string.Empty;
+            Color = string.Empty;
+            Wheels = default;
+            Model = string.Empty;
+            VehicleType = default;
+        }
     }
 }
