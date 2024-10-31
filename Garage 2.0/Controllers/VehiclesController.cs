@@ -178,11 +178,11 @@ namespace Garage_2._0.Controllers
             }
             //DetailViewModel output = new DetailViewModel(vehicle);
 
-            return View(vehicle);
+            return View(new DetailViewModel());
         }
 
         // POST: Vehicles/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost, ActionName("CheckOut")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckOutConfirmed(int id)
         {
