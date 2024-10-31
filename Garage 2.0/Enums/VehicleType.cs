@@ -1,4 +1,6 @@
-﻿namespace Garage_2._0
+﻿using System.ComponentModel;
+
+namespace Garage_2._0
 {
     public enum VehicleType
     {

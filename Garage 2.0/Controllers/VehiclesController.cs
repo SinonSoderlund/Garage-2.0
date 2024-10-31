@@ -32,6 +32,33 @@ namespace Garage_2._0.Controllers
             return View(model);
         }
 
+        // Start Feature: Search area - mohammad
+        public async Task<IActionResult> SearchByRegNumber(string searchField)
+        {
+            if (!string.IsNullOrEmpty(searchField))
+            {
+                var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField))
+                .Select(v => new Vehicle
+                {
+                    Id = v.Id,
+                    RegNr = v.RegNr,
+                    Brand = v.Brand,
+                    Model = v.Model,
+                    VehicleType = v.VehicleType,
+                    Color = v.Color,
+                    Wheels = v.Wheels,
+                    ArriveTime = v.ArriveTime,
+                });
+                return View("Index", await results.ToListAsync());
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        }
+        // End Feature: Search area - mohammad
+
+
         // GET: Vehicles/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -50,26 +77,44 @@ namespace Garage_2._0.Controllers
             return View(vehicle);
         }
 
-        // GET: Vehicles/Create
-        public IActionResult Create()
+        // GET: Vehicles/ParkVehicle
+        public IActionResult ParkVehicle()
         {
             return View();
         }
 
-        // POST: Vehicles/Create
+        // POST: Vehicles/ParkVehicle
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Wheels,ArriveTime,Color,RegNr,Model,Brand,VehicleType")] Vehicle vehicle)
+        public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(vehicle);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (await EnsureUnique(vehicle))
+                {
+                    Vehicle toAdd = new Vehicle(vehicle);
+                    _context.Add(toAdd);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                    ModelState.AddModelError("regNr", "Registration number must be unique");
             }
             return View(vehicle);
+        }
+
+        /// <summary>
+        /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
+        /// </summary>
+        /// <param name="toVerify">DetailViewModel to be verified</param>
+        /// <param name="Id">Id of edited object, leave empty for newly created objects</param>
+        /// <returns></returns>
+        public async Task<bool> EnsureUnique(DetailViewModel toVerify, int Id = -1)
+        {
+            toVerify.Id = Id;
+            return await _context.Vehicle.FirstOrDefaultAsync(v => (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
         }
 
         // GET: Vehicles/Edit/5
