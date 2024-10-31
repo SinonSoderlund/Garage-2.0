@@ -47,15 +47,18 @@ namespace Garage_2._0.Models.ViewModels
         /// Vehicle copy constructor
         /// </summary>
         /// <param name="vehicle">Vehicle to be copied</param>
-        public ReceiptViewModel(Vehicle vehicle)
+        public ReceiptViewModel(Vehicle vehicle, decimal price)
         {
+            Id = vehicle.Id;
             Brand = vehicle.Brand;
-            ArriveTime = DateTime.Now;
+            ArriveTime = vehicle.ArriveTime;
             RegNr = vehicle.RegNr;
             Color = vehicle.Color;
             Wheels = vehicle.Wheels;
             Model = vehicle.Model;
             VehicleType = vehicle.VehicleType;
+            CheckoutTime = DateTime.Now;
+            Price = (ParkedDuration.Seconds / 3600) * price; 
         }
     }
 }
