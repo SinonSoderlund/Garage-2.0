@@ -163,7 +163,7 @@ namespace Garage_2._0.Controllers
         }
 
         // GET: Vehicles/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> CheckOut(int? id)
         {
             if (id == null)
             {
@@ -183,7 +183,7 @@ namespace Garage_2._0.Controllers
         // POST: Vehicles/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> CheckOutConfirmed(int id)
         {
             var vehicle = await _context.Vehicle.FindAsync(id);
             if (vehicle != null)
