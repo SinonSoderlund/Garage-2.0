@@ -26,5 +26,19 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+		<script type="text/javascript">
+			function validateForm() {
+				const form = document.getElementById("parkVehicleForm");
+				// Check if all fields are valid
+				if (form.checkValidity()) {
+					alert('Vehicle is being parked.');
+					return true;
+				} else {
+					form.reportValidity();
+					return false;
+				}
+			}
+		</script>
     }
 }
