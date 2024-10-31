@@ -26,7 +26,7 @@ namespace Garage_2._0.Controllers
             return View(await _context.Vehicle.ToListAsync());
         }
 
-        // Start Feature: Search area - mohammad
+        // Start Feature: Search area
         public async Task<IActionResult> SearchByRegNumber(string searchField)
         {
             if (!string.IsNullOrEmpty(searchField))
@@ -50,9 +50,9 @@ namespace Garage_2._0.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
-        // End Feature: Search area - mohammad
+        // End Feature: Search area
 
-        // Start Feature: sort by date - mohammad
+        // Start Feature: sort by date
 
         public async Task<IActionResult> SortByDateAscending()
         {
@@ -70,7 +70,7 @@ namespace Garage_2._0.Controllers
             return View("Index", sortedVehicles);
         }
 
-        // End Feature: sort by date - mohammad
+        // End Feature: sort by date
 
 
 
@@ -112,6 +112,7 @@ namespace Garage_2._0.Controllers
                     Vehicle toAdd = new Vehicle(vehicle);
                     _context.Add(toAdd);
                     await _context.SaveChangesAsync();
+                    TempData["Message"] = "Vehicle successfully parked."; // feedback message
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -178,6 +179,7 @@ namespace Garage_2._0.Controllers
                         throw;
                     }
                 }
+                //TempData["Message"] = "Vehicle successfully edited."; // feedback message
                 return RedirectToAction(nameof(Index));
             }
             return View(vehicle);
@@ -197,7 +199,7 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
-
+            TempData["Message"] = "Vehicle successfully removed."; // feedback message
             return View(vehicle);
         }
 
