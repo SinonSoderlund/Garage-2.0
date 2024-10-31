@@ -176,6 +176,7 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
+            //DetailViewModel output = new DetailViewModel(vehicle);
 
             return View(vehicle);
         }
