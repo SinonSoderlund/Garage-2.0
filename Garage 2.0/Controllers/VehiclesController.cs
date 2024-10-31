@@ -114,7 +114,6 @@ namespace Garage_2._0.Controllers
             toVerify.Id = Id;
             return await _context.Vehicle.FirstOrDefaultAsync(v => (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
         }
-
         // GET: Vehicles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -129,47 +128,68 @@ namespace Garage_2._0.Controllers
                 return NotFound();
             }
 
-            // Hämtar vår enum lista med ViewBag
+            var viewModel = new DetailViewModel(vehicle);
+
             ViewBag.VehicleTypes = new SelectList(Enum.GetValues(typeof(VehicleType))
                 .Cast<VehicleType>()
-                .Select(v => new { Id = v, Name = v.ToString() }), "Id", "Name");
+                .Select(v => new { Id = v, Name = v.ToString() }), "Id", "Name", viewModel.VehicleType);
 
-            return View(vehicle);
+            return View(viewModel);
         }
 
         // POST: Vehicles/Edit/5 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Wheels,ArriveTime,Color,RegNr,Model,Brand,VehicleType")] Vehicle vehicle)
+        public async Task<IActionResult> Edit(int id, DetailViewModel viewModel)
         {
-            if (id != vehicle.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
-
-                if (ModelState.IsValid)
+            {
+                try
                 {
-                    try
+                    // Get the existing vehicle
+                    var parkedVehicle = await _context.Vehicle.FindAsync(id);
+                    if (parkedVehicle == null)
                     {
-                        _context.Update(vehicle);
-                        await _context.SaveChangesAsync();
+                        return NotFound();
                     }
-                    catch (DbUpdateConcurrencyException)
-                    {
-                        if (!VehicleExists(vehicle.Id))
-                        {
-                            return NotFound();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
+
+                    // Update only the editable properties
+                    parkedVehicle.Wheels = viewModel.Wheels;
+                    parkedVehicle.Color = viewModel.Color;
+                    parkedVehicle.Model = viewModel.Model;
+                    parkedVehicle.Brand = viewModel.Brand;
+                    parkedVehicle.VehicleType = viewModel.VehicleType;
+
+                    // Do not update ArriveTime and RegNr
+                    // parkedVehicle.ArriveTime = viewModel.ArriveTime; 
+                    // parkedVehicle.RegNr = viewModel.RegNr; 
+
+                    _context.Update(parkedVehicle);
+                    await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
-            return View(vehicle);
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!await VehicleExistsAsync(viewModel.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return View(viewModel);
+        }
+        private Task<bool> VehicleExistsAsync(int id)
+        {
+            return _context.Vehicle.AnyAsync(e => e.Id == id);
         }
 
         // GET: Vehicles/Delete/5
