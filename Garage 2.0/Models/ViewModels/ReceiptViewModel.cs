@@ -27,12 +27,19 @@ namespace Garage_2._0.Models.ViewModels
 
         [DisplayName("Type of Vehicle")]
         public VehicleType VehicleType { get; set; }
-
         public TimeSpan ParkedDuration
         {
             get
             {
                 return DateTime.Now - ArriveTime;
+            }
+        }
+
+        public string ParkedDurationText
+        {
+            get
+            {
+                return ParkTime();
             }
         }
 
@@ -43,10 +50,14 @@ namespace Garage_2._0.Models.ViewModels
         [DisplayName("Total Price")]
         public Decimal Price { get; set; }
 
+        public string PriceText { get; set; }
+
         /// <summary>
-        /// Vehicle copy constructor
+        /// Copies vehicle data into recept and then fills out recept fields
         /// </summary>
         /// <param name="vehicle">Vehicle to be copied</param>
+        /// <param name="price">hourly price for parking</param>
+
         public ReceiptViewModel(Vehicle vehicle, decimal price)
         {
             Id = vehicle.Id;
@@ -58,7 +69,31 @@ namespace Garage_2._0.Models.ViewModels
             Model = vehicle.Model;
             VehicleType = vehicle.VehicleType;
             CheckoutTime = DateTime.Now;
-            Price = (ParkedDuration.Seconds / 3600) * price; 
+            Price = getPrice(ParkedDuration.Ticks, price);
+            PriceText = Price.ToString("C");
         }
+
+        /// <summary>
+        /// Outputs time parked as string
+        /// </summary>
+        /// <returns></returns>
+        private string ParkTime()
+        {
+            TimeSpan t = ParkedDuration;
+            return $"{t.Days} Days, {t.Hours} Hours, {t.Minutes} Minutes, {t.Seconds} Seconds.";
+        }
+        /// <summary>
+        /// Calculates the cost of parking
+        /// </summary>
+        /// <param name="time">time in timespand ticks for parking duration</param>
+        /// <param name="price">hourly price of parking</param>
+        /// <returns>cost of parking</returns>
+        private decimal getPrice(long time, decimal price)
+        {
+            decimal dTime = Convert.ToDecimal(time);
+            decimal dDevide = Convert.ToDecimal(TimeSpan.TicksPerHour);
+            return (dTime/dDevide)*price;
+        }
+
     }
 }
