@@ -154,7 +154,6 @@ namespace Garage_2._0.Controllers
                     Vehicle toAdd = new Vehicle(vehicle);
                     _context.Add(toAdd);
                     await _context.SaveChangesAsync();
-                    TempData["Message"] = "Vehicle successfully parked."; // feedback message
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -236,8 +235,6 @@ namespace Garage_2._0.Controllers
                         throw;
                     }
                 }
-                //TempData["Message"] = "Vehicle successfully edited."; // feedback message
-                return RedirectToAction(nameof(Index));
             }
             return View(viewModel);
         }
