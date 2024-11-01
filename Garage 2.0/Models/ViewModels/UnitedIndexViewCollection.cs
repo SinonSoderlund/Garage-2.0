@@ -64,8 +64,9 @@ namespace Garage_2._0.Models.ViewModels
 
             decimal cost = ViewUtilities.getPrice(TicksTotal, Price);
 
-           List<string> VehiclesByTypeStrings = new();
+            List<string> VehiclesByTypeStrings = new();
 
+            //convert dictionary pairs to displayable strings 
             foreach (KeyValuePair<VehicleType, int> de in VehiclesByType)
             {
                 VehiclesByTypeStrings.Add($"{de.Key}: {de.Value}");
