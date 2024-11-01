@@ -129,10 +129,7 @@ namespace Garage_2._0.Controllers
             }
 
             var viewModel = new DetailViewModel(vehicle);
-
-            ViewBag.VehicleTypes = new SelectList(Enum.GetValues(typeof(VehicleType))
-                .Cast<VehicleType>()
-                .Select(v => new { Id = v, Name = v.ToString() }), "Id", "Name", viewModel.VehicleType);
+         
 
             return View(viewModel);
         }
@@ -149,27 +146,32 @@ namespace Garage_2._0.Controllers
 
             if (ModelState.IsValid)
             {
+                if (!await EnsureUnique(viewModel, id))
+                {
+                    ModelState.AddModelError("RegNr", "Registration number must be unique");
+                    ViewBag.VehicleTypes = new SelectList(Enum.GetValues(typeof(VehicleType))
+                        .OfType<VehicleType>()
+                        .Select(v => new { Id = v, Name = v.ToString() }), "Id", "Name", viewModel.VehicleType);
+                    return View(viewModel);
+                }
+
                 try
                 {
-                    // Get the existing vehicle
+                    // Find and update the existing vehicle’s properties
                     var parkedVehicle = await _context.Vehicle.FindAsync(id);
                     if (parkedVehicle == null)
                     {
                         return NotFound();
                     }
 
-                    // Update only the editable properties
+                    //parkedVehicle.ArriveTime = viewModel.ArriveTime;
+                    parkedVehicle.RegNr = viewModel.RegNr;
                     parkedVehicle.Wheels = viewModel.Wheels;
                     parkedVehicle.Color = viewModel.Color;
                     parkedVehicle.Model = viewModel.Model;
                     parkedVehicle.Brand = viewModel.Brand;
                     parkedVehicle.VehicleType = viewModel.VehicleType;
-
-                    // Do not update ArriveTime and RegNr
-                    // parkedVehicle.ArriveTime = viewModel.ArriveTime; 
-                    // parkedVehicle.RegNr = viewModel.RegNr; 
-
-                    _context.Update(parkedVehicle);
+                                        _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
@@ -179,12 +181,10 @@ namespace Garage_2._0.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+                    throw;
                 }
             }
+         
             return View(viewModel);
         }
         private Task<bool> VehicleExistsAsync(int id)
