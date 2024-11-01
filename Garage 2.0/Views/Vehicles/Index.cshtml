@@ -1,4 +1,4 @@
-﻿@model IEnumerable<IndexViewModel>
+﻿@model UnitedIndexViewCollection
 
 @{
     ViewData["Title"] = "Index";
@@ -30,4 +30,4 @@
     <a asp-action="ParkVehicle">Park Vehicle</a>
 </p>
     
-<partial name="_VehicleListPartial" model="@Model"/>
+<partial name="_VehicleListPartial" model="@Model.IndexViews"/>

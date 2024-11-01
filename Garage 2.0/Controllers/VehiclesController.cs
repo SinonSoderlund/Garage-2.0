@@ -8,12 +8,15 @@ using Microsoft.EntityFrameworkCore;
 using Garage_2._0.Data;
 using Garage_2._0.Models.Entities;
 using Garage_2._0.Models.ViewModels;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Garage_2._0.Controllers
 {
     public class VehiclesController : Controller
     {
         private readonly Garage_2_0Context _context;
+        private readonly decimal _price = 16.64M;
+        private FeedbackBannerViewModel _feedbackBannerMessage;
 
         public VehiclesController(Garage_2_0Context context)
         {
@@ -23,14 +26,10 @@ namespace Garage_2._0.Controllers
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
-            var model = await _context.Vehicle.Select(v => new IndexViewModel()
-            {
-                Id = v.Id,
-                VehicleType = v.VehicleType,
-                RegNr = v.RegNr,
-                ArriveTime = v.ArriveTime
-            }).ToListAsync();
-            return View(model);
+            var model = await _context.Vehicle.ToListAsync();
+
+
+            return View(new UnitedIndexViewCollection(model, _price));
         }
 
         // Start Feature: Search area
@@ -39,14 +38,8 @@ namespace Garage_2._0.Controllers
             if (!string.IsNullOrEmpty(searchField))
             {
                 var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField))
-                .Select(v => new IndexViewModel()
-                {
-                    Id = v.Id,
-                    RegNr = v.RegNr,
-                    VehicleType = v.VehicleType,
-                    ArriveTime = v.ArriveTime,
-                });
-                return View("Index", await results.ToListAsync());
+                .Select(v => new IndexViewModel(v));
+                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), null));
             }
             else
             {
@@ -61,32 +54,20 @@ namespace Garage_2._0.Controllers
         {
             var sortedVehicles = await _context.Vehicle
                 .OrderBy(v => v.ArriveTime)
-                .Select(v => new IndexViewModel()
-                {
-                    Id = v.Id,
-                    RegNr = v.RegNr,
-                    VehicleType = v.VehicleType,
-                    ArriveTime = v.ArriveTime
-                })
+                .Select(v => new IndexViewModel(v))
                 .ToListAsync();
-
-            return View("Index", sortedVehicles);
+            
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, null));
         }
 
         public async Task<IActionResult> SortByDateDescending()
         {
             var sortedVehicles = await _context.Vehicle
                 .OrderByDescending(v => v.ArriveTime)
-                .Select(v => new IndexViewModel()
-                {
-                    Id = v.Id,
-                    RegNr = v.RegNr,
-                    VehicleType = v.VehicleType,
-                    ArriveTime = v.ArriveTime
-                })
+                .Select(v => new IndexViewModel(v))
                 .ToListAsync();
 
-            return View("Index", sortedVehicles);
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, null));
         }
 
         // End Feature: sort by date
@@ -249,7 +230,7 @@ namespace Garage_2._0.Controllers
             {
                 _context.Vehicle.Remove(vehicle);
                 await _context.SaveChangesAsync();
-                ReceiptViewModel output = new ReceiptViewModel(vehicle, 16.64M);
+                ReceiptViewModel output = new ReceiptViewModel(vehicle,_price);
                 return View(output);
             }
 
