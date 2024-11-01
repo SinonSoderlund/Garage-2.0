@@ -88,14 +88,12 @@ namespace Garage_2._0.Models.Entities
         }
 
         /// <summary>
-        /// Vehicle update constructor
+        /// Vehicle update function
         /// </summary>
-        /// <param name="vehicle">Vehicle to be copied</param>
-        public Vehicle(Vehicle vehicle, DetailViewModel model)
+        /// <param name="model">model data to be inserted into this vehicle</param>
+        public void UpdateVehicle(DetailViewModel model)
         {
-            Id = vehicle.Id;
             Brand = model.Brand;
-            ArriveTime = vehicle.ArriveTime;
             RegNr = model.RegNr;
             Color = model.Color;
             Wheels = model.Wheels;
