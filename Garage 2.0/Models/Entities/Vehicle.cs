@@ -86,6 +86,22 @@ namespace Garage_2._0.Models.Entities
             Model = vehicle.Model;
             VehicleType = vehicle.VehicleType;
         }
+
+        /// <summary>
+        /// Vehicle update constructor
+        /// </summary>
+        /// <param name="vehicle">Vehicle to be copied</param>
+        public Vehicle(Vehicle vehicle, DetailViewModel model)
+        {
+            Id = vehicle.Id;
+            Brand = model.Brand;
+            ArriveTime = vehicle.ArriveTime;
+            RegNr = model.RegNr;
+            Color = model.Color;
+            Wheels = model.Wheels;
+            Model = model.Model;
+            VehicleType = model.VehicleType;
+        }
     }
 
 }
