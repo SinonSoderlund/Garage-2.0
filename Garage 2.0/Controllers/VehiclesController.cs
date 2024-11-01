@@ -227,7 +227,11 @@ namespace Garage_2._0.Controllers
                 //TempData["Message"] = "Vehicle successfully edited."; // feedback message
                 return RedirectToAction(nameof(Index));
             }
-            return View(vehicle);
+            return View(viewModel);
+        }
+        private async Task<bool> VehicleExistsAsync(int id)
+        {
+            throw new NotImplementedException();
         }
 
         // GET: Vehicles/Delete/5
