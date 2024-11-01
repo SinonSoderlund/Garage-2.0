@@ -22,6 +22,60 @@ namespace Garage_2._0.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Garage_2._0.Models.Entities.Spot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("VehicleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleId")
+                        .IsUnique()
+                        .HasFilter("[VehicleId] IS NOT NULL");
+
+                    b.ToTable("Spots");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1
+                        },
+                        new
+                        {
+                            Id = 2
+                        },
+                        new
+                        {
+                            Id = 3
+                        },
+                        new
+                        {
+                            Id = 4
+                        },
+                        new
+                        {
+                            Id = 5
+                        },
+                        new
+                        {
+                            Id = 6
+                        },
+                        new
+                        {
+                            Id = 7
+                        },
+                        new
+                        {
+                            Id = 8
+                        });
+                });
+
             modelBuilder.Entity("Garage_2._0.Models.Entities.Vehicle", b =>
                 {
                     b.Property<int>("Id")
@@ -62,30 +116,22 @@ namespace Garage_2._0.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Vehicle");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ArriveTime = new DateTime(2024, 10, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Brand = "Ferrari",
-                            Color = "Red",
-                            Model = "F40",
-                            RegNr = "abc123",
-                            VehicleType = 0,
-                            Wheels = 4L
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ArriveTime = new DateTime(2024, 10, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Brand = "Toyota",
-                            Color = "Yellow",
-                            Model = "Supra",
-                            RegNr = "def456",
-                            VehicleType = 0,
-                            Wheels = 4L
-                        });
+            modelBuilder.Entity("Garage_2._0.Models.Entities.Spot", b =>
+                {
+                    b.HasOne("Garage_2._0.Models.Entities.Vehicle", "Vehicle")
+                        .WithOne("Spot")
+                        .HasForeignKey("Garage_2._0.Models.Entities.Spot", "VehicleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("Garage_2._0.Models.Entities.Vehicle", b =>
+                {
+                    b.Navigation("Spot")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
