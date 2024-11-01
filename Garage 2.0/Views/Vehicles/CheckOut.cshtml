@@ -13,11 +13,11 @@
     <div class="row align-items-end g-5">
         <form asp-action="CheckOut" class="col-1">
             <input class="d-none" type="hidden" asp-for="Id" />
-            <input type="submit" value="Check Out" class="btn btn-danger" />
+        <input type="submit" value="Check Out" class="btn btn-danger" onclick="alert('Vehicle is being checked out.')" />
         </form>
         <form asp-action="GetReceipt" id="GetReceipt" class="col-2">
             <input class="d-none" type="hidden" asp-for="Id" />
-            <input type="submit" value="Check Out and Get Receipt" class="btn btn-warning" />
+        <input type="submit" value="Check Out and Get Receipt" class="btn btn-warning" onclick="alert('Printing receipt.')" />
         </form>
         <form class="col-2">
         <a asp-action="Index" class="btn btn-primary">Back to List</a>

@@ -14,6 +14,18 @@
     </div>
 </form>
 <!-- End: Adding Search field-->
+
+<!-- Start: Adding Sorting field-->
+<div class="mb-3">
+    <button onclick="location.href='@Url.Action("SortByDateAscending", "Vehicles")'" class="btn btn-primary">
+        Sort by Date Ascending
+    </button>
+    <button onclick="location.href='@Url.Action("SortByDateDescending", "Vehicles")'" class="btn btn-primary">
+        Sort by Date Descending
+    </button>
+</div>
+
+<!-- End: Adding Sorting field-->
 <p>
     <a asp-action="ParkVehicle">Park Vehicle</a>
 </p>
