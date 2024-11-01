@@ -91,6 +91,28 @@ namespace Garage_2._0.Controllers
 
         // End Feature: sort by date
 
+        // Start: Filter by Vehicle type
+        public async Task<IActionResult> FilterByVehicleType(string vehicleType)
+        {
+            if (!string.IsNullOrEmpty(vehicleType) && Enum.TryParse(vehicleType, out VehicleType type))
+            {
+                var filteredVehicles = _context.Vehicle
+                    .Where(v => v.VehicleType == type)
+                    .Select(v => new IndexViewModel()
+                    {
+                        Id = v.Id,
+                        RegNr = v.RegNr,
+                        VehicleType = v.VehicleType,
+                        ArriveTime = v.ArriveTime
+                    });
+
+                return View("Index", await filteredVehicles.ToListAsync());
+            }
+
+            // If no filter is applied or invalid, show all vehicles
+            return RedirectToAction(nameof(Index));
+        }
+        // End: Filter by Vehicle type
 
 
         // GET: Vehicles/Details/5

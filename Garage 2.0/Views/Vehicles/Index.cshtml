@@ -26,6 +26,23 @@
 </div>
 
 <!-- End: Adding Sorting field-->
+<!-- Start: filter by vehicle type-->
+<form asp-action="FilterByVehicleType" method="get" class="mb-3">
+    <label for="vehicleType">Filter by Vehicle Type:</label>
+    <select name="vehicleType" class="form-select" id="vehicleType">
+        <option value="">All Types</option>
+        <option value="Car">Car</option>
+        <option value="Vehicle">Vehicle</option>
+        <option value="Bus">Bus</option>
+        <option value="Motorcycle">Motorcycle</option>
+        <option value="AirPlane">AirPlane</option>
+        <option value="Boat">Boat</option>
+        <option value="HoverCraft">HoverCraft</option>
+    </select>
+    <br />
+    <button class="btn btn-primary" type="submit">Filter</button>
+</form>
+<!-- End: filter by vehicle type-->
 <p>
     <a asp-action="ParkVehicle">Park Vehicle</a>
 </p>
