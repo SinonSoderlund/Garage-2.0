@@ -1,4 +1,4 @@
-﻿@model Garage_2._0.Models.Entities.Vehicle
+﻿@model DetailViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -13,16 +13,12 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+
             <div class="form-group">
                 <label asp-for="Wheels" class="control-label"></label>
                 <input asp-for="Wheels" class="form-control" />
                 <span asp-validation-for="Wheels" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ArriveTime" class="control-label"></label>
-                <input asp-for="ArriveTime" class="form-control" />
-                <span asp-validation-for="ArriveTime" class="text-danger"></span>
-            </div>
+            </div>      
             <div class="form-group">
                 <label asp-for="Color" class="control-label"></label>
                 <input asp-for="Color" class="form-control" />
@@ -45,7 +41,9 @@
             </div>
             <div class="form-group">
                 <label asp-for="VehicleType" class="control-label"></label>
-                <select asp-for="VehicleType" class="form-control"></select>
+                <select asp-for="VehicleType" class="form-control" asp-items="@Html.GetEnumSelectList<VehicleType>()">
+                    <option selected="selected" value="">Please select</option>
+                </select>
                 <span asp-validation-for="VehicleType" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -60,5 +58,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
