@@ -187,9 +187,6 @@ namespace Garage_2._0.Controllers
                 if (!await EnsureUnique(viewModel, id))
                 {
                     ModelState.AddModelError("RegNr", "Registration number must be unique");
-                    ViewBag.VehicleTypes = new SelectList(Enum.GetValues(typeof(VehicleType))
-                        .OfType<VehicleType>()
-                        .Select(v => new { Id = v, Name = v.ToString() }), "Id", "Name", viewModel.VehicleType);
                     return View(viewModel);
                 }
 
@@ -201,15 +198,8 @@ namespace Garage_2._0.Controllers
                     {
                         return NotFound();
                     }
-
-                    //parkedVehicle.ArriveTime = viewModel.ArriveTime;
-                    parkedVehicle.RegNr = viewModel.RegNr;
-                    parkedVehicle.Wheels = viewModel.Wheels;
-                    parkedVehicle.Color = viewModel.Color;
-                    parkedVehicle.Model = viewModel.Model;
-                    parkedVehicle.Brand = viewModel.Brand;
-                    parkedVehicle.VehicleType = viewModel.VehicleType;
-                                        _context.Update(parkedVehicle);
+                    parkedVehicle.UpdateVehicle(viewModel);
+                    _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }

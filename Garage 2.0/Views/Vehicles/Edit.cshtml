@@ -13,39 +13,7 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-
-            <div class="form-group">
-                <label asp-for="Wheels" class="control-label"></label>
-                <input asp-for="Wheels" class="form-control" />
-                <span asp-validation-for="Wheels" class="text-danger"></span>
-            </div>      
-            <div class="form-group">
-                <label asp-for="Color" class="control-label"></label>
-                <input asp-for="Color" class="form-control" />
-                <span asp-validation-for="Color" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="RegNr" class="control-label"></label>
-                <input asp-for="RegNr" class="form-control" />
-                <span asp-validation-for="RegNr" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Model" class="control-label"></label>
-                <input asp-for="Model" class="form-control" />
-                <span asp-validation-for="Model" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Brand" class="control-label"></label>
-                <input asp-for="Brand" class="form-control" />
-                <span asp-validation-for="Brand" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="VehicleType" class="control-label"></label>
-                <select asp-for="VehicleType" class="form-control" asp-items="@Html.GetEnumSelectList<VehicleType>()">
-                    <option selected="selected" value="">Please select</option>
-                </select>
-                <span asp-validation-for="VehicleType" class="text-danger"></span>
-            </div>
+            <partial name="_vehicleInputs" />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" onclick="alert('Vehicle edited.')" />
             </div>
