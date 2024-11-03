@@ -32,13 +32,10 @@
     <label for="vehicleType">Filter by Vehicle Type:</label>
     <select name="vehicleType" class="form-select" id="vehicleType">
         <option value="">All Types</option>
-        <option value="Car">Car</option>
-        <option value="Vehicle">Vehicle</option>
-        <option value="Bus">Bus</option>
-        <option value="Motorcycle">Motorcycle</option>
-        <option value="AirPlane">AirPlane</option>
-        <option value="Boat">Boat</option>
-        <option value="HoverCraft">HoverCraft</option>
+        @foreach (var type in Enum.GetValues(typeof(Garage_2._0.VehicleType)))
+        {
+            <option value="@type">@type</option>
+        }
     </select>
     <br />
     <button class="btn btn-primary" type="submit">Filter</button>
