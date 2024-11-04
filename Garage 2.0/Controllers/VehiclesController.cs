@@ -72,6 +72,28 @@ namespace Garage_2._0.Controllers
 
         // End Feature: sort by date
 
+        // Start: Filter by Vehicle type
+        public async Task<IActionResult> FilterByVehicleType(string vehicleType)
+        {
+            if (!string.IsNullOrEmpty(vehicleType) && Enum.TryParse(vehicleType, out VehicleType type))
+            {
+                var filteredVehicles = _context.Vehicle
+                    .Where(v => v.VehicleType == type)
+                    .Select(v => new IndexViewModel()
+                    {
+                        Id = v.Id,
+                        RegNr = v.RegNr,
+                        VehicleType = v.VehicleType,
+                        ArriveTime = v.ArriveTime
+                    });
+
+                return View("Index", await filteredVehicles.ToListAsync());
+            }
+
+            // If no filter is applied or invalid, show all vehicles
+            return RedirectToAction(nameof(Index));
+        }
+        // End: Filter by Vehicle type
 
 
         // GET: Vehicles/Details/5
@@ -113,7 +135,6 @@ namespace Garage_2._0.Controllers
                     Vehicle toAdd = new Vehicle(vehicle);
                     _context.Add(toAdd);
                     await _context.SaveChangesAsync();
-                    TempData["Message"] = "Vehicle successfully parked."; // feedback message
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -195,8 +216,6 @@ namespace Garage_2._0.Controllers
                         throw;
                     }
                 }
-                //TempData["Message"] = "Vehicle successfully edited."; // feedback message
-                return RedirectToAction(nameof(Index));
             }
             return View(viewModel);
         }

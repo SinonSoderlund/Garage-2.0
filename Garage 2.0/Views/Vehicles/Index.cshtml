@@ -26,6 +26,21 @@
 </div>
 
 <!-- End: Adding Sorting field-->
+
+<!-- Start: filter by vehicle type-->
+<form asp-action="FilterByVehicleType" method="get" class="mb-3">
+    <label for="vehicleType">Filter by Vehicle Type:</label>
+    <select name="vehicleType" class="form-select" id="vehicleType">
+        <option value="">All Types</option>
+        @foreach (var type in Enum.GetValues(typeof(Garage_2._0.VehicleType)))
+        {
+            <option value="@type">@type</option>
+        }
+    </select>
+    <br />
+    <button class="btn btn-primary" type="submit">Filter</button>
+</form>
+<!-- End: filter by vehicle type-->
 <p>
     <a asp-action="ParkVehicle">Park Vehicle</a>
 </p>
