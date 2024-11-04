@@ -38,31 +38,6 @@ namespace Garage_2._0.Data
                 modelBuilder.Entity<Spot>().HasData(
                     new Spot { Id = i, VehicleId = null }); // Initializing spots with no vehicles
             }
-            
-            // modelBuilder.Entity<Vehicle>().HasData(
-            //     new Vehicle
-            //     {
-            //         Id = 1,
-            //         Wheels = 4,
-            //         ArriveTime = DateTime.Parse("2024-10-30"),
-            //         Color = "Red",
-            //         RegNr = "abc123",
-            //         Model = "F40",
-            //         Brand = "Ferrari",
-            //         VehicleType = VehicleType.Car
-            //     },
-            //     new Vehicle
-            //     {
-            //         Id = 2,
-            //         Wheels = 4,
-            //         ArriveTime = DateTime.Parse("2024-10-30"),
-            //         Color = "Yellow",
-            //         RegNr = "def456",
-            //         Model = "Supra",
-            //         Brand = "Toyota",
-            //         VehicleType = VehicleType.Car
-            //     });
-        
         }
     }
 }
