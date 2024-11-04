@@ -208,6 +208,7 @@ namespace Garage_2._0.Controllers
                     parkedVehicle.UpdateVehicle(viewModel);
                     _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
+                    await _feedbackRepository.SetMessage(new FeedbackMessage("Vehicle sucessfully edited!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -257,6 +258,7 @@ namespace Garage_2._0.Controllers
             if (vehicle != null)
             {
                 _context.Vehicle.Remove(vehicle);
+                await _feedbackRepository.SetMessage(new FeedbackMessage("Vehicle Checked Out", AlertType.info));
             }
 
             await _context.SaveChangesAsync();
@@ -274,6 +276,7 @@ namespace Garage_2._0.Controllers
                 _context.Vehicle.Remove(vehicle);
                 await _context.SaveChangesAsync();
                 ReceiptViewModel output = new ReceiptViewModel(vehicle, _price);
+                await _feedbackRepository.SetMessage(new FeedbackMessage("Vehicle Checked Out", AlertType.info));
                 return View(output);
             }
 
