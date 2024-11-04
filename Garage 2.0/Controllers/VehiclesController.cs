@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Garage_2._0.Data;
 using Garage_2._0.Models.Entities;
 using Garage_2._0.Models.ViewModels;
+using Garage_2._0.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Garage_2._0.Controllers
@@ -21,6 +22,7 @@ namespace Garage_2._0.Controllers
         public VehiclesController(Garage_2_0Context context)
         {
             _context = context;
+            _feedbackBannerMessage = null!;
         }
 
         // GET: Vehicles
@@ -37,9 +39,8 @@ namespace Garage_2._0.Controllers
         {
             if (!string.IsNullOrEmpty(searchField))
             {
-                var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField))
-                .Select(v => new IndexViewModel(v));
-                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), null));
+                var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField));
+                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), _price));
             }
             else
             {
@@ -54,20 +55,18 @@ namespace Garage_2._0.Controllers
         {
             var sortedVehicles = await _context.Vehicle
                 .OrderBy(v => v.ArriveTime)
-                .Select(v => new IndexViewModel(v))
                 .ToListAsync();
             
-            return View("Index", new UnitedIndexViewCollection(sortedVehicles, null));
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price));
         }
 
         public async Task<IActionResult> SortByDateDescending()
         {
             var sortedVehicles = await _context.Vehicle
                 .OrderByDescending(v => v.ArriveTime)
-                .Select(v => new IndexViewModel(v))
                 .ToListAsync();
 
-            return View("Index", new UnitedIndexViewCollection(sortedVehicles, null));
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price));
         }
 
         // End Feature: sort by date
@@ -78,16 +77,9 @@ namespace Garage_2._0.Controllers
             if (!string.IsNullOrEmpty(vehicleType) && Enum.TryParse(vehicleType, out VehicleType type))
             {
                 var filteredVehicles = _context.Vehicle
-                    .Where(v => v.VehicleType == type)
-                    .Select(v => new IndexViewModel()
-                    {
-                        Id = v.Id,
-                        RegNr = v.RegNr,
-                        VehicleType = v.VehicleType,
-                        ArriveTime = v.ArriveTime
-                    });
+                    .Where(v => v.VehicleType == type);
 
-                return View("Index", await filteredVehicles.ToListAsync());
+                return View("Index", new UnitedIndexViewCollection(await filteredVehicles.ToListAsync(), _price, UIVC_State.filteredByType));
             }
 
             // If no filter is applied or invalid, show all vehicles

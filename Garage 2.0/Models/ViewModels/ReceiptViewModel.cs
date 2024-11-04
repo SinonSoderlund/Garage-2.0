@@ -123,7 +123,7 @@ namespace Garage_2._0.Models.ViewModels
             VehicleType = vehicleType;
             CheckoutTime = DateTime.Now;
             Price = ViewUtilities.getPrice(ParkedDuration.Ticks, price);
-            PriceText = Price.ToString("C");
+            PriceText = ViewUtilities.PriceToString(Price); 
 
         }
         /// <summary>

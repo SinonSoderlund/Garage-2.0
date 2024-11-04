@@ -44,5 +44,12 @@
 <p>
     <a asp-action="ParkVehicle">Park Vehicle</a>
 </p>
-    
-<partial name="_VehicleListPartial" model="@Model.IndexViews"/>
+@if (Model.UIVCModelState != UIVC_State.empty)
+{
+    <partial name="_VehicleListPartial" model="@Model.IndexViews"/>
+    <partial name="_StatisticsPartial" />
+}
+else
+{
+    <h3>Selection contains no vehicles.</h3>
+}
