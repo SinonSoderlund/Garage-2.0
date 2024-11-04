@@ -35,15 +35,13 @@
                     </th>
                 </tr>
             }
-            @if (Model.UIVCModelState != UIVC_State.partial || Model.UIVCModelState != UIVC_State.empty)
-            {
                 <tr>
                     <th>
                         Number of wheels total:
                         @Model.GarageStatistics.WheelTotal;
                     </th>
                 </tr>
-            }
+            
             <tr>
                 <th>
                     Total Price of parking: @Model.GarageStatistics.ParkingTotalPriceText;

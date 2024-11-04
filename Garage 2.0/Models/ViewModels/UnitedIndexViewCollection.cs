@@ -34,7 +34,7 @@ namespace Garage_2._0.Models.ViewModels
         /// <param name="vehicles">IEnumerable of garage vehicles</param>
         /// <param name="Price">hourly parking price sek</param>
         /// <param name="spots">Spots collection</param>
-        /// <param name="modelState">State of model, defaults to full in htis mode, set to partial if the model only contains subset of vehicles</param>
+        /// <param name="modelState">State of model, defaults to full in this mode, set to partial if the model only contains subset of vehicles</param>
         /// <param name="feedbackMessage">Feedback message to display, leave empty if there is no message</param>
         public UnitedIndexViewCollection(IEnumerable<Vehicle> vehicles, decimal Price, IEnumerable<Spot>? spots, UIVC_State modelState = UIVC_State.full, FeedbackMessage feedbackMessage = null!)
         {
