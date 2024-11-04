@@ -25,6 +25,8 @@ namespace Garage_2._0.Models.Entities
         public string Brand { get; set; }
 
         public VehicleType VehicleType { get; set; }
+        
+        public Spot Spot { get; set; }
 
         /// <summary>
         /// Takes the data from the DetailViewModel and construts a vehicle from it

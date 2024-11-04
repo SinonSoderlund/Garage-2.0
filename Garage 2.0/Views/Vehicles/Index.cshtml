@@ -1,4 +1,5 @@
-﻿@model IEnumerable<IndexViewModel>
+﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@model IEnumerable<IndexViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -41,8 +42,21 @@
     <button class="btn btn-primary" type="submit">Filter</button>
 </form>
 <!-- End: filter by vehicle type-->
-<p>
-    <a asp-action="ParkVehicle">Park Vehicle</a>
-</p>
-    
+<h3>Available Spots: @ViewBag.AvailableSpots</h3>
+@if (ViewBag.AvailableSpots == 0)
+{
+<div class="alert alert-warning">
+    The garage is full.
+</div>
+@* <button class="disabled"> *@
+@*     Park Vehicle *@
+@* </button> *@
+}
+else
+{
+<button class="btn btn-success">
+    <a asp-action="ParkVehicle" class="text-white">Park Vehicle</a>
+</button>
+}
+
 <partial name="_VehicleListPartial" model="@Model"/>
