@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Garage_2._0.Models.Entities;
+using Garage_2._0.Models.ViewModels;
 
 namespace Garage_2._0.Data
 {
@@ -16,6 +17,8 @@ namespace Garage_2._0.Data
 
         public DbSet<Garage_2._0.Models.Entities.Vehicle> Vehicle { get; set; } = default!;
         public DbSet<Spot> Spots { get; set; } = default!;
+
+        public FeedbackMessage? FeedbackMessage { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +41,7 @@ namespace Garage_2._0.Data
                 modelBuilder.Entity<Spot>().HasData(
                     new Spot { Id = i, VehicleId = null }); // Initializing spots with no vehicles
             }
+            modelBuilder.Entity<FeedbackMessage>().HasKey(s => s.Id);
         }
     }
 }

@@ -44,9 +44,15 @@
 </form>
 <!-- End: filter by vehicle type-->
 
+@if(Model.FeedbackBannerMessage != null)
+{
+    <div class="alert alert-@Model.FeedbackBannerMessage.AlertType">
+        @Model.FeedbackBannerMessage.Message;
+    </div>
+}
 
-<h3>Available Spots: @ViewBag.AvailableSpots</h3>
-@if (ViewBag.AvailableSpots == 0)
+<h3>Available Spots: @Model.SpotViewModel.AvailableSpots</h3>
+@if (Model.SpotViewModel.AvailableSpots == 0)
 {
 <div class="alert alert-warning">
     The garage is full.

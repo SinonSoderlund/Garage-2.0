@@ -19,34 +19,33 @@ namespace Garage_2._0.Controllers
         private readonly Garage_2_0Context _context;
         private readonly ISpotRepository _spotRepository;
         private readonly decimal _price = 16.64M;
-        private FeedbackBannerViewModel _feedbackBannerMessage;
+        private readonly IFeedbackMessageRepository _feedbackRepository;
 
-        public VehiclesController(Garage_2_0Context context, ISpotRepository spotRepository)
+        public VehiclesController(Garage_2_0Context context, ISpotRepository spotRepository, IFeedbackMessageRepository feedbackMessageRepository)
         {
             _context = context;
             _spotRepository = spotRepository;
-            _feedbackBannerMessage = null!;
+            _feedbackRepository = feedbackMessageRepository;
         }
+
+
 
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
             var model = await _context.Vehicle.ToListAsync();
-            var availableSpots = await _spotRepository.GetAvailableSpots();
-            ViewBag.AvailableSpots = availableSpots.Count();
 
-            return View(new UnitedIndexViewCollection(model, _price));
+
+            return View(new UnitedIndexViewCollection(model, _price, await _spotRepository.GetAvailableSpots(), UIVC_State.full, await _feedbackRepository.GetMessage()));
         }
-    
+
         // Start Feature: Search area
         public async Task<IActionResult> SearchByRegNumber(string searchField)
         {
             if (!string.IsNullOrEmpty(searchField))
             {
                 var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField));
-                var availableSpots = await _spotRepository.GetAvailableSpots();
-                ViewBag.AvailableSpots = availableSpots.Count();
-                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), _price));
+                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), _price, await _spotRepository.GetAvailableSpots()));
             }
             else
             {
@@ -62,9 +61,8 @@ namespace Garage_2._0.Controllers
             var sortedVehicles = await _context.Vehicle
                 .OrderBy(v => v.ArriveTime)
                 .ToListAsync();
-            var availableSpots = await _spotRepository.GetAvailableSpots();
-            ViewBag.AvailableSpots = availableSpots.Count();
-            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price));
+
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAvailableSpots()));
         }
 
         public async Task<IActionResult> SortByDateDescending()
@@ -72,9 +70,8 @@ namespace Garage_2._0.Controllers
             var sortedVehicles = await _context.Vehicle
                 .OrderByDescending(v => v.ArriveTime)
                 .ToListAsync();
-            var availableSpots = await _spotRepository.GetAvailableSpots();
-            ViewBag.AvailableSpots = availableSpots.Count();
-            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price));
+
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAvailableSpots()));
         }
 
         // End Feature: sort by date
@@ -86,9 +83,7 @@ namespace Garage_2._0.Controllers
             {
                 var filteredVehicles = _context.Vehicle
                     .Where(v => v.VehicleType == type);
-                var availableSpots = await _spotRepository.GetAvailableSpots();
-                ViewBag.AvailableSpots = availableSpots.Count();
-                return View("Index", new UnitedIndexViewCollection(await filteredVehicles.ToListAsync(), _price, UIVC_State.filteredByType));
+                return View("Index", new UnitedIndexViewCollection(await filteredVehicles.ToListAsync(), _price, await _spotRepository.GetAvailableSpots(), UIVC_State.filteredByType));
             }
 
             // If no filter is applied or invalid, show all vehicles
@@ -127,31 +122,31 @@ namespace Garage_2._0.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-            public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
+        public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
+        {
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
+                var availableSpotId = await _spotRepository.FindAvailableSpotId();
+                if (availableSpotId == 0) // No available spot was found if this is true
                 {
-                    var availableSpotId = await _spotRepository.FindAvailableSpotId();
-                    if (availableSpotId == 0) // No available spot was found if this is true
-                    {
-                        ModelState.AddModelError("", "no spots available");
-                        return View(vehicle);
-                    }
-                    
-                    if (await EnsureUnique(vehicle))
-                    {
-                        Vehicle toAdd = new Vehicle(vehicle);
-                        _context.Add(toAdd);
-                        await _context.SaveChangesAsync();
-                        await _spotRepository.AssignVehicleToSpot(availableSpotId, toAdd.Id);
-                        TempData["Message"] = "Vehicle successfully parked."; // feedback message
-                        return RedirectToAction(nameof(Index));
-                    }
-                    else
-                        ModelState.AddModelError("regNr", "Registration number must be unique");
+                    ModelState.AddModelError("", "no spots available");
+                    return View(vehicle);
                 }
-                return View(vehicle);
+
+                if (await EnsureUnique(vehicle))
+                {
+                    Vehicle toAdd = new Vehicle(vehicle);
+                    _context.Add(toAdd);
+                    await _context.SaveChangesAsync();
+                    await _spotRepository.AssignVehicleToSpot(availableSpotId, toAdd.Id);
+                    await _feedbackRepository.SetMessage(new FeedbackMessage("Vehicle sucessfully parked!", AlertType.success));
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                    ModelState.AddModelError("regNr", "Registration number must be unique");
             }
+            return View(vehicle);
+        }
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
@@ -179,7 +174,7 @@ namespace Garage_2._0.Controllers
             }
 
             var viewModel = new DetailViewModel(vehicle);
-         
+
 
             return View(viewModel);
         }
@@ -278,7 +273,7 @@ namespace Garage_2._0.Controllers
             {
                 _context.Vehicle.Remove(vehicle);
                 await _context.SaveChangesAsync();
-                ReceiptViewModel output = new ReceiptViewModel(vehicle,_price);
+                ReceiptViewModel output = new ReceiptViewModel(vehicle, _price);
                 return View(output);
             }
 
