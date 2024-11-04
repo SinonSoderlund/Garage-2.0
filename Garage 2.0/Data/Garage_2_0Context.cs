@@ -30,7 +30,7 @@ namespace Garage_2._0.Data
                 // telling entityframework that Prop VehicleId in Spot-class will serve as foreign key.
                 // VehicleId FK will store Vehicle's PK (Vehicle.Id) when a spot is accociated with a vehicle.
                 .HasForeignKey<Spot>(s => s.VehicleId) // specifies which prop that will serve as foreign key
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.SetNull); // When a vehicle is deleted, the accociated Spot will be set to null
 
             int GARAGE_SIZE = 8;
             for (int i = 1; i <= GARAGE_SIZE; i++)

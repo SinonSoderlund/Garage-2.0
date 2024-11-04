@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Garage_2._0.Data;
+using Garage_2._0.Data.Repositories;
 using Garage_2._0.Models.Entities;
 using Garage_2._0.Models.ViewModels;
 
@@ -14,10 +15,12 @@ namespace Garage_2._0.Controllers
     public class VehiclesController : Controller
     {
         private readonly Garage_2_0Context _context;
+        private readonly ISpotRepository _spotRepository;
 
-        public VehiclesController(Garage_2_0Context context)
+        public VehiclesController(Garage_2_0Context context, ISpotRepository spotRepository)
         {
             _context = context;
+            _spotRepository = spotRepository;
         }
 
         // GET: Vehicles
@@ -30,9 +33,13 @@ namespace Garage_2._0.Controllers
                 RegNr = v.RegNr,
                 ArriveTime = v.ArriveTime
             }).ToListAsync();
+           
+            var availableSpots = await _spotRepository.GetAvailableSpots();
+            
+            ViewBag.AvailableSpots = availableSpots.Count();
             return View(model);
         }
-
+    
         // Start Feature: Search area
         public async Task<IActionResult> SearchByRegNumber(string searchField)
         {
@@ -123,23 +130,31 @@ namespace Garage_2._0.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
-        {
-            if (ModelState.IsValid)
+            public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
             {
-                if (await EnsureUnique(vehicle))
+                if (ModelState.IsValid)
                 {
-                    Vehicle toAdd = new Vehicle(vehicle);
-                    _context.Add(toAdd);
-                    await _context.SaveChangesAsync();
-                    TempData["Message"] = "Vehicle successfully parked."; // feedback message
-                    return RedirectToAction(nameof(Index));
+                    var availableSpotId = await _spotRepository.FindAvailableSpotId();
+                    if (availableSpotId == 0) // No available spot was found if this is true
+                    {
+                        ModelState.AddModelError("", "no spots available");
+                        return View(vehicle);
+                    }
+                    
+                    if (await EnsureUnique(vehicle))
+                    {
+                        Vehicle toAdd = new Vehicle(vehicle);
+                        _context.Add(toAdd);
+                        await _context.SaveChangesAsync();
+                        await _spotRepository.AssignVehicleToSpot(availableSpotId, toAdd.Id);
+                        TempData["Message"] = "Vehicle successfully parked."; // feedback message
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                        ModelState.AddModelError("regNr", "Registration number must be unique");
                 }
-                else
-                    ModelState.AddModelError("regNr", "Registration number must be unique");
+                return View(vehicle);
             }
-            return View(vehicle);
-        }
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
