@@ -1,4 +1,5 @@
 ﻿using Garage_2._0.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Garage_2._0.Data.Repositories
 {
@@ -11,21 +12,33 @@ namespace Garage_2._0.Data.Repositories
             _context = context;
         }
 
-        public Task<FeedbackMessage> GetMessage()
+        public async Task<FeedbackMessage> GetMessage()
         {
 
-            FeedbackMessage output =  _context.FeedbackMessage!;
-            _context.FeedbackMessage = null!;
-            return Task.FromResult(output);
+            FeedbackMessage feedback = await _context.FeedbackMessage.FirstOrDefaultAsync();
+            if (feedback == null || !feedback.HasValue())
+                return null;
+            var output = new FeedbackMessage(feedback);
+            feedback.Erase();
+            _context.FeedbackMessage.Update(feedback);
+            await _context.SaveChangesAsync();
+            return output;
         }
 
 
-        public Task<bool> SetMessage(FeedbackMessage message)
+        public async Task<bool> SetMessage(FeedbackMessage message)
         {
-            if(message == null) throw new ArgumentNullException("message");
-            _context.FeedbackMessage = message;
-
-                return Task.FromResult(true);
+            if(message == null) throw new ArgumentNullException("message should not be null");
+            FeedbackMessage feedbackMessage = await _context.FeedbackMessage.FirstOrDefaultAsync();
+            if (feedbackMessage == null)
+                _context.FeedbackMessage.Add(message);
+            else
+            {
+                feedbackMessage.UpdateMessage(message);
+                _context.FeedbackMessage.Update(feedbackMessage);
+            }
+            await _context.SaveChangesAsync();
+                return true;
         }
     }
 }

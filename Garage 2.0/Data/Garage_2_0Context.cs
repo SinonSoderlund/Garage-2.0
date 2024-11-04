@@ -18,7 +18,7 @@ namespace Garage_2._0.Data
         public DbSet<Garage_2._0.Models.Entities.Vehicle> Vehicle { get; set; } = default!;
         public DbSet<Spot> Spots { get; set; } = default!;
 
-        public FeedbackMessage? FeedbackMessage { get; set; } = default!;
+        public DbSet<FeedbackMessage> FeedbackMessage { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

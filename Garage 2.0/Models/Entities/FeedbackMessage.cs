@@ -22,5 +22,25 @@ namespace Garage_2._0.Models.Entities
             Message = bannerViewModel.Message;
             AlertType = bannerViewModel.AlertType;
         }
+        public FeedbackMessage(FeedbackMessage feedback)
+        {
+            Message = feedback.Message;
+            AlertType = feedback.AlertType;
+        }
+
+        public void UpdateMessage(FeedbackMessage message)
+        {
+            Message = message.Message;
+            AlertType = message.AlertType;
+        }
+        public void Erase()
+        { 
+            Message = string.Empty;
+            AlertType = default;
+        }
+        public bool HasValue()
+        {
+            return Message != string.Empty;
+        }
     }
 }
