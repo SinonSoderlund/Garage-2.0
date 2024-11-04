@@ -35,8 +35,8 @@ namespace Garage_2._0.Controllers
             }).ToListAsync();
            
             var availableSpots = await _spotRepository.GetAvailableSpots();
-            
             ViewBag.AvailableSpots = availableSpots.Count();
+            
             return View(model);
         }
     
@@ -53,6 +53,10 @@ namespace Garage_2._0.Controllers
                     VehicleType = v.VehicleType,
                     ArriveTime = v.ArriveTime,
                 });
+                
+                var availableSpots = await _spotRepository.GetAvailableSpots();
+                ViewBag.AvailableSpots = availableSpots.Count();
+                
                 return View("Index", await results.ToListAsync());
             }
             else
@@ -76,7 +80,10 @@ namespace Garage_2._0.Controllers
                     ArriveTime = v.ArriveTime
                 })
                 .ToListAsync();
-
+            
+            var availableSpots = await _spotRepository.GetAvailableSpots();
+            ViewBag.AvailableSpots = availableSpots.Count();
+            
             return View("Index", sortedVehicles);
         }
 
@@ -92,6 +99,9 @@ namespace Garage_2._0.Controllers
                     ArriveTime = v.ArriveTime
                 })
                 .ToListAsync();
+            
+            var availableSpots = await _spotRepository.GetAvailableSpots();
+            ViewBag.AvailableSpots = availableSpots.Count();
 
             return View("Index", sortedVehicles);
         }
@@ -112,6 +122,9 @@ namespace Garage_2._0.Controllers
                         VehicleType = v.VehicleType,
                         ArriveTime = v.ArriveTime
                     });
+                
+                var availableSpots = await _spotRepository.GetAvailableSpots();
+                ViewBag.AvailableSpots = availableSpots.Count();
 
                 return View("Index", await filteredVehicles.ToListAsync());
             }
@@ -177,22 +190,6 @@ namespace Garage_2._0.Controllers
                 }
                 return View(vehicle);
             }
-        public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
-        {
-            if (ModelState.IsValid)
-            {
-                if (await EnsureUnique(vehicle))
-                {
-                    Vehicle toAdd = new Vehicle(vehicle);
-                    _context.Add(toAdd);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
-                else
-                    ModelState.AddModelError("regNr", "Registration number must be unique");
-            }
-            return View(vehicle);
-        }
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
