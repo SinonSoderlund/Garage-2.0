@@ -98,6 +98,28 @@ namespace Garage_2._0.Controllers
 
         // End Feature: sort by date
 
+        // Start: Filter by Vehicle type
+        public async Task<IActionResult> FilterByVehicleType(string vehicleType)
+        {
+            if (!string.IsNullOrEmpty(vehicleType) && Enum.TryParse(vehicleType, out VehicleType type))
+            {
+                var filteredVehicles = _context.Vehicle
+                    .Where(v => v.VehicleType == type)
+                    .Select(v => new IndexViewModel()
+                    {
+                        Id = v.Id,
+                        RegNr = v.RegNr,
+                        VehicleType = v.VehicleType,
+                        ArriveTime = v.ArriveTime
+                    });
+
+                return View("Index", await filteredVehicles.ToListAsync());
+            }
+
+            // If no filter is applied or invalid, show all vehicles
+            return RedirectToAction(nameof(Index));
+        }
+        // End: Filter by Vehicle type
 
 
         // GET: Vehicles/Details/5
@@ -155,6 +177,22 @@ namespace Garage_2._0.Controllers
                 }
                 return View(vehicle);
             }
+        public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
+        {
+            if (ModelState.IsValid)
+            {
+                if (await EnsureUnique(vehicle))
+                {
+                    Vehicle toAdd = new Vehicle(vehicle);
+                    _context.Add(toAdd);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                    ModelState.AddModelError("regNr", "Registration number must be unique");
+            }
+            return View(vehicle);
+        }
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
@@ -167,7 +205,6 @@ namespace Garage_2._0.Controllers
             toVerify.Id = Id;
             return await _context.Vehicle.FirstOrDefaultAsync(v => (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
         }
-
         // GET: Vehicles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -181,31 +218,47 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
-            return View(vehicle);
+
+            var viewModel = new DetailViewModel(vehicle);
+         
+
+            return View(viewModel);
         }
 
-        // POST: Vehicles/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Vehicles/Edit/5 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Wheels,ArriveTime,Color,RegNr,Model,Brand,VehicleType")] Vehicle vehicle)
+        public async Task<IActionResult> Edit(int id, DetailViewModel viewModel)
         {
-            if (id != vehicle.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                if (!await EnsureUnique(viewModel, id))
+                {
+                    ModelState.AddModelError("RegNr", "Registration number must be unique");
+                    return View(viewModel);
+                }
+
                 try
                 {
-                    _context.Update(vehicle);
+                    // Find and update the existing vehicle’s properties
+                    var parkedVehicle = await _context.Vehicle.FindAsync(id);
+                    if (parkedVehicle == null)
+                    {
+                        return NotFound();
+                    }
+                    parkedVehicle.UpdateVehicle(viewModel);
+                    _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!VehicleExists(vehicle.Id))
+                    if (!await VehicleExistsAsync(viewModel.Id))
                     {
                         return NotFound();
                     }
@@ -214,10 +267,12 @@ namespace Garage_2._0.Controllers
                         throw;
                     }
                 }
-                //TempData["Message"] = "Vehicle successfully edited."; // feedback message
-                return RedirectToAction(nameof(Index));
             }
-            return View(vehicle);
+            return View(viewModel);
+        }
+        private async Task<bool> VehicleExistsAsync(int id)
+        {
+            throw new NotImplementedException();
         }
 
         // GET: Vehicles/Delete/5

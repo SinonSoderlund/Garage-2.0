@@ -88,6 +88,20 @@ namespace Garage_2._0.Models.Entities
             Model = vehicle.Model;
             VehicleType = vehicle.VehicleType;
         }
+
+        /// <summary>
+        /// Vehicle update function
+        /// </summary>
+        /// <param name="model">model data to be inserted into this vehicle</param>
+        public void UpdateVehicle(DetailViewModel model)
+        {
+            Brand = model.Brand;
+            RegNr = model.RegNr;
+            Color = model.Color;
+            Wheels = model.Wheels;
+            Model = model.Model;
+            VehicleType = model.VehicleType;
+        }
     }
 
 }
