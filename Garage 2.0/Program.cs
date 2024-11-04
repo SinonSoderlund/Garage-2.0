@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Garage_2._0.Data;
+using Garage_2._0.Data.Repositories;
+
 namespace Garage_2._0
 {
     public class Program
@@ -11,6 +13,8 @@ namespace Garage_2._0
             builder.Services.AddDbContext<Garage_2_0Context>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Garage_2_0Context") ?? throw new InvalidOperationException("Connection string 'Garage_2_0Context' not found.")));
 
+            builder.Services.AddScoped<ISpotRepository, SpotRepository>();
+            
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 

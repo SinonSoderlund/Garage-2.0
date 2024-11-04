@@ -1,4 +1,5 @@
-﻿@model IEnumerable<IndexViewModel>
+﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@model IEnumerable<IndexViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -26,8 +27,36 @@
 </div>
 
 <!-- End: Adding Sorting field-->
-<p>
-    <a asp-action="ParkVehicle">Park Vehicle</a>
-</p>
-    
+
+<!-- Start: filter by vehicle type-->
+<form asp-action="FilterByVehicleType" method="get" class="mb-3">
+    <label for="vehicleType">Filter by Vehicle Type:</label>
+    <select name="vehicleType" class="form-select" id="vehicleType">
+        <option value="">All Types</option>
+        @foreach (var type in Enum.GetValues(typeof(Garage_2._0.VehicleType)))
+        {
+            <option value="@type">@type</option>
+        }
+    </select>
+    <br />
+    <button class="btn btn-primary" type="submit">Filter</button>
+</form>
+<!-- End: filter by vehicle type-->
+<h3>Available Spots: @ViewBag.AvailableSpots</h3>
+@if (ViewBag.AvailableSpots == 0)
+{
+<div class="alert alert-warning">
+    The garage is full.
+</div>
+@* <button class="disabled"> *@
+@*     Park Vehicle *@
+@* </button> *@
+}
+else
+{
+<button class="btn btn-success">
+    <a asp-action="ParkVehicle" class="text-white">Park Vehicle</a>
+</button>
+}
+
 <partial name="_VehicleListPartial" model="@Model"/>

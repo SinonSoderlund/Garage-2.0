@@ -25,6 +25,8 @@ namespace Garage_2._0.Models.Entities
         public string Brand { get; set; }
 
         public VehicleType VehicleType { get; set; }
+        
+        public Spot Spot { get; set; }
 
         public int ParkingSpace { get; set; } // New property to count spaces, daniel is doing it, but using it temperorary for now to implement feature
 
