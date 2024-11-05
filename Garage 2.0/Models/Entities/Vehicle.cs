@@ -28,7 +28,6 @@ namespace Garage_2._0.Models.Entities
         
         public Spot Spot { get; set; }
 
-        public int ParkingSpace { get; set; } // New property to count spaces, daniel is doing it, but using it temperorary for now to implement feature
 
         /// <summary>
         /// Takes the data from the DetailViewModel and construts a vehicle from it

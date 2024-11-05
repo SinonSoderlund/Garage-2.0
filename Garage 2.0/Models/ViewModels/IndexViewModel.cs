@@ -15,7 +15,9 @@ namespace Garage_2._0.Models.ViewModels
         [DisplayName("Time of Arrival")]
         public DateTime ArriveTime { get; set; }
 
-        
+        public int SpotNumber { get; set; }
+
+
         [DisplayName("Time Parked")]
         public TimeSpan ParkedDuration
         {

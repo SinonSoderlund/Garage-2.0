@@ -16,6 +16,8 @@ namespace Garage_2._0.Controllers
     {
         private readonly Garage_2_0Context _context;
         private readonly ISpotRepository _spotRepository;
+        private const int MotorcyclesPerSpot = 3;
+
 
         public VehiclesController(Garage_2_0Context context, ISpotRepository spotRepository)
         {
@@ -31,7 +33,8 @@ namespace Garage_2._0.Controllers
                 Id = v.Id,
                 VehicleType = v.VehicleType,
                 RegNr = v.RegNr,
-                ArriveTime = v.ArriveTime
+                ArriveTime = v.ArriveTime,
+                SpotNumber = v.Spot.SpotNumber                
             }).ToListAsync();
            
             var availableSpots = await _spotRepository.GetAvailableSpots();
@@ -190,6 +193,22 @@ namespace Garage_2._0.Controllers
                 }
                 return View(vehicle);
             }
+        private async Task<int> FindAvailableSpotForVehicle(VehicleType vehicleType)
+        {
+            //if (vehicleType == VehicleType.Motorcycle)
+            //{
+            //    var spotWithSpace = await _context.Spot
+            //        .Where(s => s.Vehicles.Count < MotorcyclesPerSpot)
+            //        .OrderBy(s => s.Vehicles.Count)
+            //        .FirstOrDefaultAsync();
+
+            //    return spotWithSpace?.Id ?? 0;
+            //}
+            //else
+            {
+                return await _spotRepository.FindAvailableSpotId();
+            }
+        }
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
@@ -243,12 +262,29 @@ namespace Garage_2._0.Controllers
                 try
                 {
                     // Find and update the existing vehicle’s properties
-                    var parkedVehicle = await _context.Vehicle.FindAsync(id);
+                    var parkedVehicle = await _context.Vehicle
+                    .Include(v => v.Spot)
+                    .FirstOrDefaultAsync(v => v.Id == id);
+
                     if (parkedVehicle == null)
                     {
                         return NotFound();
                     }
+                    var originalType = parkedVehicle.VehicleType;
                     parkedVehicle.UpdateVehicle(viewModel);
+
+                    if (originalType != parkedVehicle.VehicleType)
+                    {
+                        var newSpotId = await FindAvailableSpotForVehicle(parkedVehicle.VehicleType);
+                        if (newSpotId == 0)
+                        {
+                            ModelState.AddModelError("", "No available spots for the new vehicle type.");
+                            return View(viewModel);
+                        }
+
+                        await _spotRepository.AssignVehicleToSpot(newSpotId, parkedVehicle.Id);
+                    }
+
                     _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));

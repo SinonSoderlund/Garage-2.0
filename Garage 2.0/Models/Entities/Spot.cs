@@ -4,5 +4,6 @@ public class Spot
 {
     public int Id { get; set; }
     public int? VehicleId { get; set; } // nullable, null represents empty spot.
-    public Vehicle? Vehicle { get; set; } // navigation property.
+    public Vehicle? Vehicles { get; set; } // navigation property.
+    public int SpotNumber { get; set; }
 }
