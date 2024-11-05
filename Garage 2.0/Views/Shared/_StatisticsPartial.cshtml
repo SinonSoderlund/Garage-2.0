@@ -1,0 +1,53 @@
+﻿@model UnitedIndexViewCollection
+
+@{
+    @if (Model.UIVCModelState != UIVC_State.empty)
+    {
+        @if (Model.UIVCModelState != UIVC_State.full)
+        {
+            <h3>Garage statistics for this selection:</h3>
+        }
+        else
+        {
+            <h3>Garage statistics:</h3>
+        }
+        <table>
+            @if (Model.UIVCModelState != UIVC_State.filteredByType)
+            {
+                <tr>
+                    <th>Vehicle Type: Vehicle quantity</th>
+                </tr>
+                @foreach (string s in Model.GarageStatistics.VehiclesByType)
+                {
+                    <tr>
+                        <td>
+                            @s
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <th>
+
+                        Vehicles in selection: @((Model.GarageStatistics.VehiclesByType[0])[Model.GarageStatistics.VehiclesByType[0].Length - 1])
+                    </th>
+                </tr>
+            }
+                <tr>
+                    <th>
+                        Number of wheels total:
+                        @Model.GarageStatistics.WheelTotal;
+                    </th>
+                </tr>
+            
+            <tr>
+                <th>
+                    Total Price of parking: @Model.GarageStatistics.ParkingTotalPriceText;
+                </th>
+            </tr>
+
+        </table>
+    }
+}
