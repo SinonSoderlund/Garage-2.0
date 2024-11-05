@@ -1,5 +1,6 @@
 ﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
-@model IEnumerable<IndexViewModel>
+
+@model UnitedIndexViewCollection
 
 @{
     ViewData["Title"] = "Index";
@@ -42,8 +43,16 @@
     <button class="btn btn-primary" type="submit">Filter</button>
 </form>
 <!-- End: filter by vehicle type-->
-<h3>Available Spots: @ViewBag.AvailableSpots</h3>
-@if (ViewBag.AvailableSpots == 0)
+
+@if(Model.FeedbackBannerMessage != null)
+{
+    <div class="alert alert-@Model.FeedbackBannerMessage.AlertType">
+        @Model.FeedbackBannerMessage.Message
+    </div>
+}
+
+<h3>Available Spots: @Model.SpotViewModel.AvailableSpots</h3>
+@if (Model.SpotViewModel.AvailableSpots == 0)
 {
 <div class="alert alert-warning">
     The garage is full.
@@ -59,4 +68,12 @@ else
 </button>
 }
 
-<partial name="_VehicleListPartial" model="@Model"/>
+@if (Model.UIVCModelState != UIVC_State.empty)
+{
+    <partial name="_VehicleListPartial" model="@Model.IndexViews"/>
+    <partial name="_StatisticsPartial" />
+}
+else
+{
+    <h3>Selection contains no vehicles.</h3>
+}
