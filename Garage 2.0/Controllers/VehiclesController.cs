@@ -139,7 +139,7 @@ namespace Garage_2._0.Controllers
                     _context.Add(toAdd);
                     await _context.SaveChangesAsync();
                     await _spotRepository.AssignVehicleToSpot(availableSpotId, toAdd.Id);
-                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle ({toAdd.RegNr}) sucessfully parked!", AlertType.success));
+                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {toAdd.RegNr}) sucessfully parked!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -208,7 +208,7 @@ namespace Garage_2._0.Controllers
                     parkedVehicle.UpdateVehicle(viewModel);
                     _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
-                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle ({parkedVehicle.RegNr}) sucessfully edited!", AlertType.success));
+                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {parkedVehicle.RegNr}) sucessfully edited!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -258,7 +258,7 @@ namespace Garage_2._0.Controllers
             if (vehicle != null)
             {
                 _context.Vehicle.Remove(vehicle);
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle ({vehicle.RegNr}) Checked Out", AlertType.info));
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
             }
 
             await _context.SaveChangesAsync();
@@ -276,7 +276,7 @@ namespace Garage_2._0.Controllers
                 _context.Vehicle.Remove(vehicle);
                 await _context.SaveChangesAsync();
                 ReceiptViewModel output = new ReceiptViewModel(vehicle, _price);
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle ({vehicle.RegNr}) Checked Out", AlertType.info));
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
                 return View(output);
             }
 
