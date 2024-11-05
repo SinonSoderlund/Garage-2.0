@@ -2,7 +2,68 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <header class="text-center mb-5">
+        <h1 class="display-4">Welcome to Garage 2.0</h1>
+        <p class="lead">Your modern solution for efficient parking management</p>
+    </header>
+
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-parking mr-2"></i>Smart Parking</h5>
+                    <p class="card-text">Optimize your parking space with our intelligent allocation system.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-car mr-2"></i>Multi-Vehicle Support</h5>
+                    <p class="card-text">From cars to motorcycles and trucks, we've got space for all types of vehicles.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-clipboard mr-2"></i>Easy Management</h5>
+                    <p class="card-text">Effortlessly manage your parked vehicles with our user-friendly interface.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-5">
+        <div class="card-body">
+            <h2 class="card-title">About Garage 2.0</h2>
+            <h6 class="card-subtitle mb-2 text-muted">The next generation of parking management</h6>
+            <p class="card-text">
+                Garage 2.0 is a state-of-the-art parking management system designed to streamline your parking operations.
+                Our system offers intelligent space allocation, support for various vehicle types, and an intuitive interface
+                for both administrators and users.
+            </p>
+            <a asp-controller="Vehicles" asp-action="Index" class="btn btn-primary">Start Managing Vehicles</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-motorcycle mr-2"></i>Motorcycle Sharing</h5>
+                    <p class="card-text">Our unique feature allows up to three motorcycles to share a single parking spot, maximizing space efficiency.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-clock mr-2"></i>Real-Time Updates</h5>
+                    <p class="card-text">Get real-time information on parking availability and vehicle status.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
