@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using System;using Microsoft.EntityFrameworkCore;
 using Garage_2._0.Models.Entities;
 
 namespace Garage_2._0.Data
@@ -14,29 +10,30 @@ namespace Garage_2._0.Data
         {
         }
 
-        public DbSet<Garage_2._0.Models.Entities.Vehicle> Vehicle { get; set; } = default!;
+        public DbSet<Vehicle> Vehicle { get; set; } = default!;
         public DbSet<Spot> Spots { get; set; } = default!;
+        
+        public DbSet<VehicleSpot > VehicleSpots { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Vehicle>()
+                .HasMany(e => e.Spots)
+                .WithMany(e => e.Vehicles)
+                .UsingEntity<VehicleSpot>();
+            
             modelBuilder.Entity<Spot>()
-                
-                // 1-1 relationship. 1 spot can have 1 vehicle and vice versa
-                .HasOne(s => s.Vehicle) // 1 Spot can only have a single vehicle .
-                .WithOne(v => v.Spot) // 1 Vehicle can only have a single spot.
-                
-                // telling entityframework that Prop VehicleId in Spot-class will serve as foreign key.
-                // VehicleId FK will store Vehicle's PK (Vehicle.Id) when a spot is accociated with a vehicle.
-                .HasForeignKey<Spot>(s => s.VehicleId) // specifies which prop that will serve as foreign key
-                .OnDelete(DeleteBehavior.SetNull); // When a vehicle is deleted, the accociated Spot will be set to null
+                .HasMany(s => s.VehicleSpots)
+                .WithOne(vs => vs.Spot)
+                .HasForeignKey(vs => vs.SpotId);
 
-            int GARAGE_SIZE = 8;
+            int GARAGE_SIZE = 15;
             for (int i = 1; i <= GARAGE_SIZE; i++)
             {
                 modelBuilder.Entity<Spot>().HasData(
-                    new Spot { Id = i, VehicleId = null }); // Initializing spots with no vehicles
+                    new Spot { Id = i }); // Initializing spots with no vehicles
             }
         }
     }

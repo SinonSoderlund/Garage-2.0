@@ -12,34 +12,83 @@ public class SpotRepository : ISpotRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Spot>> GetAvailableSpots()
+    public async Task<IEnumerable<Spot>> GetAllSpotsWithVehicles()
     {
-        return await _context.Spots.Where(s => s.VehicleId == null).ToListAsync();
+        return await _context.Spots
+            .Include(s => s.Vehicles)  // Directly include Vehicles
+            .ToListAsync();
     }
     
+    public async Task<IEnumerable<Spot>> GetAvailableSpots()
+    {
+        // Return spots that do not have any vehicle associated with them
+        return await _context.Spots
+            .Where(s => !s.VehicleSpots.Any()) // Check if there are no VehicleSpot entries for this spot
+            .ToListAsync();
+    }
+
+    public async Task<int> FindFirstAvailableTripleSpot()
+    {
+        // Get all spots and order them by their ID
+        var spots = await _context.Spots
+            .OrderBy(s => s.Id)
+            .ToListAsync();
+
+        // Loop through all the spots in the spots-list. -2...
+        // because it's uneccesary and program will crash...
+        // trying to get an out-of-range index (spots[i + 2].Vehicles.Count == 0)
+        for (int i = 0; i < spots.Count - 2; i++)
+        {
+            if (spots[i].Vehicles.Count == 0 && spots[i + 1].Vehicles.Count == 0 && spots[i + 2].Vehicles.Count == 0)
+            {
+                // if we find 3 adjecant spots where no vehicles are parked, we return the middle point
+                return spots[i + 1].Id;
+            }
+            
+        }
+
+        // return 0 if no Id is found.
+        return 0; 
+    }
+
     public async Task<int> FindAvailableSpotId()
     {
         var availableSpotId = await _context.Spots
-            .Where(s => s.VehicleId == null) // See if spot is available
+            .Where(s => s.Vehicles.Count == 0) 
             .Select(s => s.Id)
-            .FirstOrDefaultAsync(); // returns first found empty spot in database where value is null, 0 if no spot is found
+            .FirstOrDefaultAsync(); // Return the first available spot id, or 0 if none found
         
         return availableSpotId;
     }
 
-    public async Task<bool> AssignVehicleToSpot(int spotId, int vehicleId)
+    public async Task<int> FindFirstAvailableMotorcycleSpotId()
     {
-        var spot = await _context.Spots.FindAsync(spotId); // gets a spot from Spots table with given id
+        var firstAvailableMcSpotId = await _context.Spots
+                
+            // Looks for a spot where count is <= 3 and where the Vehicle type is MC    
+            .Where(s => s.Vehicles.Count(v => v.VehicleType == VehicleType.Motorcycle) <= 3)
+            
+            // Selects the id if above criteria is met
+            .Select(s => s.Id)
+            
+            // Will return first available spot id
+            .FirstOrDefaultAsync();
         
-        // Check if the spot exists and that it doesn't contain a VehicleId (which means a vehicle is parked here).
-        if (spot != null && spot.VehicleId == null) 
-        {
-            spot.VehicleId = vehicleId; // assign vehicle to the spot
-            await _context.SaveChangesAsync(); // save changes to database
-            return true;
-        }
-
-        return false;
+        // if no spot id is to be found, then 0 is returned.
+        return firstAvailableMcSpotId;
     }
 
+    public async Task<bool> AssignVehicleToSpot(int spotId, int vehicleId)
+    {
+        // Create a new accociation in the Join Table where SpotId points to the VehicleId
+        var vehicleSpot = new VehicleSpot
+        {
+            SpotId = spotId,
+            VehicleId = vehicleId
+        };
+
+        _context.VehicleSpots.Add(vehicleSpot); // Adds the accociation to the Join Table
+        await _context.SaveChangesAsync(); // Save the changes
+        return true;
+    }
 }

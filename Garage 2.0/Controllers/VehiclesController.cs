@@ -16,16 +16,21 @@ namespace Garage_2._0.Controllers
     {
         private readonly Garage_2_0Context _context;
         private readonly ISpotRepository _spotRepository;
+        private readonly IVehicleSpotRepository _vehicleSpotRepository;
 
-        public VehiclesController(Garage_2_0Context context, ISpotRepository spotRepository)
+        public VehiclesController(Garage_2_0Context context,
+            ISpotRepository spotRepository,
+            IVehicleSpotRepository vehicleSpotRepository)
         {
             _context = context;
             _spotRepository = spotRepository;
+            _vehicleSpotRepository = vehicleSpotRepository;
         }
 
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
+            
             var model = await _context.Vehicle.Select(v => new IndexViewModel()
             {
                 Id = v.Id,
@@ -36,6 +41,17 @@ namespace Garage_2._0.Controllers
            
             var availableSpots = await _spotRepository.GetAvailableSpots();
             ViewBag.AvailableSpots = availableSpots.Count();
+            
+            var spotsWithVehicles = await _spotRepository.GetAllSpotsWithVehicles();
+            ViewBag.AllSpots = spotsWithVehicles;
+            foreach (var spot in spotsWithVehicles)
+            {
+                Console.WriteLine($"Spot ID: {spot.Id}, Vehicle Count: {spot.Vehicles.Count}");
+                foreach (var vehicle in spot.Vehicles)
+                {
+                    Console.WriteLine($" - Vehicle ID: {vehicle.Id}, Type: {vehicle.VehicleType}");
+                }
+            }
             
             return View(model);
         }

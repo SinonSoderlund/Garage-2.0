@@ -4,6 +4,8 @@ namespace Garage_2._0.Data.Repositories;
 
 public interface ISpotRepository
 {
+    Task<IEnumerable<Spot>> GetAllSpotsWithVehicles();
+    
     /// <summary>
     /// Function that returns a list of all available spots in a table. Can use .Count to see how many available of
     /// returned list.

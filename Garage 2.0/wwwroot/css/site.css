@@ -38,3 +38,13 @@ body {
 button a {
     text-decoration: none;
 }
+
+.parking-slot-container {
+    display: flex;
+    gap: 1rem;
+}
+
+.parking-slot {
+    width: 1rem;
+    height: 1rem;
+}

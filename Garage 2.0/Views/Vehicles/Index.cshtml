@@ -1,4 +1,6 @@
-﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
+﻿@using System.Collections
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @model IEnumerable<IndexViewModel>
 
 @{
@@ -43,14 +45,40 @@
 </form>
 <!-- End: filter by vehicle type-->
 <h3>Available Spots: @ViewBag.AvailableSpots</h3>
+<div class="parking-slot-container"> 
+    @foreach (Spot spot in ViewBag.AllSpots)
+    {
+    int motorcycleCount = spot.Vehicles.Count(v => v.VehicleType == VehicleType.Motorcycle);
+    int totalCount = spot.Vehicles.Count;
+
+    // Determine the background color based on vehicle count
+    string bgColorClass = "btn btn-dark"; // Default color
+    if (motorcycleCount > 0)
+    {
+    if (motorcycleCount < 3)
+    {
+    bgColorClass = "btn btn-warning"; // Less than 3 motorcycles
+    }
+    else
+    {
+    bgColorClass = "btn btn-danger"; // 3 or more motorcycles
+    }
+    }
+    else if (totalCount > 0)
+    {
+    bgColorClass = "btn btn-danger"; // Other vehicles present
+    }
+
+    // Render the square for the spot
+    <div class="@bgColorClass parking-slot"></div> <!-- Use margin for spacing -->
+    }
+</div>
+
 @if (ViewBag.AvailableSpots == 0)
 {
 <div class="alert alert-warning">
     The garage is full.
 </div>
-@* <button class="disabled"> *@
-@*     Park Vehicle *@
-@* </button> *@
 }
 else
 {

@@ -3,6 +3,7 @@
 public class Spot
 {
     public int Id { get; set; }
-    public int? VehicleId { get; set; } // nullable, null represents empty spot.
-    public Vehicle? Vehicle { get; set; } // navigation property.
+    public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+
+    public List<VehicleSpot> VehicleSpots { get; set; } = new();
 }

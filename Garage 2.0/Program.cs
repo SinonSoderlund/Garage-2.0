@@ -14,6 +14,8 @@ namespace Garage_2._0
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Garage_2_0Context") ?? throw new InvalidOperationException("Connection string 'Garage_2_0Context' not found.")));
 
             builder.Services.AddScoped<ISpotRepository, SpotRepository>();
+            builder.Services.AddScoped<IVehicleSpotRepository, VehicleSpotRepository>();
+
             
             // Add services to the container.
             builder.Services.AddControllersWithViews();

@@ -25,8 +25,11 @@ namespace Garage_2._0.Models.Entities
         public string Brand { get; set; }
 
         public VehicleType VehicleType { get; set; }
+
+        public List<Spot> Spots { get; set; } = new List<Spot>();
+        public List<VehicleSpot> VehicleSpots { get; set; } = new List<VehicleSpot>();
+
         
-        public Spot Spot { get; set; }
 
         /// <summary>
         /// Takes the data from the DetailViewModel and construts a vehicle from it
