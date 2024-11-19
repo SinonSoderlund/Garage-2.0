@@ -20,6 +20,7 @@ namespace Garage_2._0
 
             builder.Services.AddScoped<ISpotRepository, SpotRepository>();
             builder.Services.AddScoped<IFeedbackMessageRepository, FeedbackMessageRepository>();
+            builder.Services.AddScoped<IPersonNumberRepository, PersonNumberRepository>();
             
             // Add services to the container.
             builder.Services.AddControllersWithViews();
