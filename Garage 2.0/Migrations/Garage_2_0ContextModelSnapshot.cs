@@ -39,7 +39,7 @@ namespace Garage_2._0.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FeedbackMessage");
+                    b.ToTable("FeedbackMessage", (string)null);
                 });
 
             modelBuilder.Entity("Garage_2._0.Models.Entities.Spot", b =>
@@ -59,7 +59,7 @@ namespace Garage_2._0.Migrations
                         .IsUnique()
                         .HasFilter("[VehicleId] IS NOT NULL");
 
-                    b.ToTable("Spots");
+                    b.ToTable("Spots", (string)null);
 
                     b.HasData(
                         new
@@ -211,7 +211,7 @@ namespace Garage_2._0.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Vehicle");
+                    b.ToTable("Vehicle", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
