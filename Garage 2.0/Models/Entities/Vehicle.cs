@@ -19,14 +19,18 @@ namespace Garage_2._0.Models.Entities
         public string RegNr { get; set; }
 
         [StringLength(20)]
-        public string Model {  get; set; }
+        public string Model { get; set; }
 
         [StringLength(20)]
         public string Brand { get; set; }
 
-        public VehicleType VehicleType { get; set; }
-        
-        public Spot Spot { get; set; }
+        public int VehicleTypeId { get; set; }
+        public VehicleType VehicleType { get; set; } // nav prop
+
+        public ICollection<Spot> Spots { get; set; }
+
+        public string UserId { get; set; }
+        public User User { get; set; }
 
         public string UserId { get; set; }
         public User User { get; set; }
@@ -43,12 +47,12 @@ namespace Garage_2._0.Models.Entities
             Color = viewModel.Color;
             Wheels = viewModel.Wheels;
             Model = viewModel.Model;
-            VehicleType = viewModel.VehicleType;
+            //VehicleType = viewModel.VehicleType;
         }
         /// <summary>
         /// Default constructor, sets strings to string.Empty and other fields to default.
         /// </summary>
-        public Vehicle() 
+        public Vehicle()
         {
             Brand = string.Empty;
             ArriveTime = default;
@@ -103,7 +107,7 @@ namespace Garage_2._0.Models.Entities
             Color = model.Color;
             Wheels = model.Wheels;
             Model = model.Model;
-            VehicleType = model.VehicleType;
+            //VehicleType = model.VehicleType;
         }
     }
 

@@ -28,7 +28,9 @@ namespace Garage_2._0.Models.ViewModels
         public string Brand { get; set; }
 
         [DisplayName("Type of Vehicle")]
-        public VehicleType VehicleType { get; set; }
+
+        //public VehicleType VehicleType { get; set; }
+        public int VehicleTypeId { get; set; }
 
 
         /// <summary>
@@ -44,7 +46,7 @@ namespace Garage_2._0.Models.ViewModels
             Color = vehicle.Color;
             Wheels = vehicle.Wheels;
             Model = vehicle.Model;
-            VehicleType = vehicle.VehicleType;
+            //VehicleType = vehicle.VehicleType;
         }
         /// <summary>
         /// Default constructor, sets strings to string.Empty and other fields to default.
@@ -57,7 +59,7 @@ namespace Garage_2._0.Models.ViewModels
             Color = string.Empty;
             Wheels = default;
             Model = string.Empty;
-            VehicleType = default;
+            //VehicleType = default;
         }
 
         /// <summary>
@@ -77,7 +79,7 @@ namespace Garage_2._0.Models.ViewModels
             Color = color;
             Wheels = wheels;
             Model = model;
-            VehicleType = vehicleType;
+            //VehicleType = vehicleType;
         }
         /// <summary>
         /// Vehicle copy constructor
@@ -91,7 +93,7 @@ namespace Garage_2._0.Models.ViewModels
             Color = vehicle.Color;
             Wheels = vehicle.Wheels;
             Model = vehicle.Model;
-            VehicleType = vehicle.VehicleType;
+            //VehicleType = vehicle.VehicleType;
         }
     }
 }

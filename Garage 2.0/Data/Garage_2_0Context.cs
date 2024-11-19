@@ -15,8 +15,9 @@ namespace Garage_2._0.Data
     {
 
 
-        public DbSet<Garage_2._0.Models.Entities.Vehicle> Vehicle { get; set; } = default!;
+        public DbSet<Vehicle> Vehicle { get; set; } = default!;
         public DbSet<Spot> Spots { get; set; } = default!;
+        public DbSet<VehicleType> VehicleTypes { get; set; } = default!;
 
         public DbSet<FeedbackMessage> FeedbackMessage { get; set; } = default!;
 
@@ -52,7 +53,7 @@ namespace Garage_2._0.Data
             for (int i = 1; i <= GARAGE_SIZE; i++)
             {
                 modelBuilder.Entity<Spot>().HasData(
-                    new Spot { Id = i, VehicleId = null }); // Initializing spots with no vehicles
+                    new Spot { Id = i }); // Initializing spots with no vehicles
             }
             modelBuilder.Entity<FeedbackMessage>().HasKey(s => s.Id);
         }

@@ -4,6 +4,7 @@ using Garage_2._0.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Garage_2._0.Migrations
 {
     [DbContext(typeof(Garage_2_0Context))]
-    partial class Garage_2_0ContextModelSnapshot : ModelSnapshot
+    [Migration("20241119110732_test")]
+    partial class test
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,8 +139,8 @@ namespace Garage_2._0.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("PersonalNumber")
-                        .HasColumnType("bigint");
+                    b.Property<int>("PersonalNumber")
+                        .HasColumnType("int");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -203,10 +206,7 @@ namespace Garage_2._0.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("UserOverviewViewModelId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("VehicleType")
+                    b.Property<int>("VehicleTypeId")
                         .HasColumnType("int");
 
                     b.Property<long>("Wheels")
@@ -216,12 +216,12 @@ namespace Garage_2._0.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserOverviewViewModelId");
+                    b.HasIndex("VehicleTypeId");
 
                     b.ToTable("Vehicle");
                 });
 
-            modelBuilder.Entity("Garage_2._0.Models.ViewModels.UserOverviewViewModel", b =>
+            modelBuilder.Entity("Garage_2._0.Models.Entities.VehicleType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -229,23 +229,16 @@ namespace Garage_2._0.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("TotalCost")
+                    b.Property<decimal>("SpotSize")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("VehicleCount")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserOverviewViewModel");
+                    b.ToTable("VehicleTypes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -419,21 +412,6 @@ namespace Garage_2._0.Migrations
                     b.Navigation("VehicleType");
                 });
 
-            modelBuilder.Entity("Garage_2._0.Models.Entities.Vehicle", b =>
-                {
-                    b.HasOne("Garage_2._0.Models.Entities.User", "User")
-                        .WithMany("Vehicles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Garage_2._0.Models.ViewModels.UserOverviewViewModel", null)
-                        .WithMany("Vehicles")
-                        .HasForeignKey("UserOverviewViewModelId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -485,12 +463,7 @@ namespace Garage_2._0.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Garage_2._0.Models.Entities.User", b =>
-                {
-                    b.Navigation("Vehicles");
-                });
-
-            modelBuilder.Entity("Garage_2._0.Models.Entities.Vehicle", b =>
+            modelBuilder.Entity("SpotVehicle", b =>
                 {
                     b.HasOne("Garage_2._0.Models.Entities.Spot", null)
                         .WithMany()
@@ -505,7 +478,12 @@ namespace Garage_2._0.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Garage_2._0.Models.ViewModels.UserOverviewViewModel", b =>
+            modelBuilder.Entity("Garage_2._0.Models.Entities.User", b =>
+                {
+                    b.Navigation("Vehicles");
+                });
+
+            modelBuilder.Entity("Garage_2._0.Models.Entities.VehicleType", b =>
                 {
                     b.Navigation("Vehicles");
                 });
