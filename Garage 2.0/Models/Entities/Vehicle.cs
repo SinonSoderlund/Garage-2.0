@@ -28,6 +28,9 @@ namespace Garage_2._0.Models.Entities
         
         public Spot Spot { get; set; }
 
+        public string UserId { get; set; }
+        public User User { get; set; }
+
         /// <summary>
         /// Takes the data from the DetailViewModel and construts a vehicle from it
         /// </summary>

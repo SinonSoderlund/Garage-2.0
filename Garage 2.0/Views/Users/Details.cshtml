@@ -1,0 +1,31 @@
+﻿@model Garage_2._0.Models.ViewModels.UserOverviewViewModel
+
+<h1>Details for @Model.FullName</h1>
+
+<p><strong>Vehicle Count:</strong> @Model.VehicleCount</p>
+<p><strong>Total Cost:</strong> @Model.TotalCost:C</p>
+
+<h2>Registered Vehicles</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Reg. Number</th>
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Color</th>
+            <th>Wheels</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var vehicle in Model.Vehicles)
+        {
+            <tr>
+                <td>@vehicle.RegNr</td>
+                <td>@vehicle.Brand</td>
+                <td>@vehicle.Model</td>
+                <td>@vehicle.Color</td>
+                <td>@vehicle.Wheels</td>
+            </tr>
+        }
+    </tbody>
+</table>

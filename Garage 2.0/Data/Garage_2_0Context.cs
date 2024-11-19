@@ -42,6 +42,12 @@ namespace Garage_2._0.Data
                 .HasForeignKey<Spot>(s => s.VehicleId) // specifies which prop that will serve as foreign key
                 .OnDelete(DeleteBehavior.SetNull); // When a vehicle is deleted, the accociated Spot will be set to null
 
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Vehicles)
+                .WithOne(v => v.User)
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             int GARAGE_SIZE = 8;
             for (int i = 1; i <= GARAGE_SIZE; i++)
             {
@@ -50,5 +56,6 @@ namespace Garage_2._0.Data
             }
             modelBuilder.Entity<FeedbackMessage>().HasKey(s => s.Id);
         }
+        public DbSet<Garage_2._0.Models.ViewModels.UserOverviewViewModel> UserOverviewViewModel { get; set; } = default!;
     }
 }
