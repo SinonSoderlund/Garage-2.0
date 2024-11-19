@@ -10,5 +10,9 @@ namespace Garage_2._0.Models.ViewModels
         public int VehicleCount { get; set; }
         public decimal TotalCost { get; set; }
         public IEnumerable<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+
+
+        public List<User> Users { get; set; } = new List<User>();
+        public List<VehicleType> VehicleTypes { get; set; } = new List<VehicleType>();
     }
 }

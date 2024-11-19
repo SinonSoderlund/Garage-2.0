@@ -35,9 +35,9 @@ namespace Garage_2._0.Data
             modelBuilder.Entity<Spot>()
                 
                 // 1-1 relationship. 1 spot can have 1 vehicle and vice versa
-                .HasOne(s => s.Vehicle) // 1 Spot can only have a single vehicle .
+                .HasOne(s => s.Vehicles) // 1 Spot can only have a single vehicle .
                 .WithOne(v => v.Spot) // 1 Vehicle can only have a single spot.
-                
+
                 // telling entityframework that Prop VehicleId in Spot-class will serve as foreign key.
                 // VehicleId FK will store Vehicle's PK (Vehicle.Id) when a spot is accociated with a vehicle.
                 .HasForeignKey<Spot>(s => s.VehicleId) // specifies which prop that will serve as foreign key

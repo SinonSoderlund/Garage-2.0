@@ -26,10 +26,11 @@ namespace Garage_2._0.Controllers
             }
 
             // Filter by vehicle type if applicable
-            if (!string.IsNullOrEmpty(vehicleTypeFilter) && Enum.TryParse(vehicleTypeFilter, out VehicleType type))
+            if (int.TryParse(vehicleTypeFilter, out int vehicleTypeId))
             {
-                query = query.Where(u => u.Vehicles.Any(v => v.VehicleType == type));
+                query = query.Where(u => u.Vehicles.Any(v => v.VehicleType.Id == vehicleTypeId));
             }
+
 
             var users = await query.ToListAsync();
 
