@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Garage_2._0.Data.Repositories;
 
 namespace Garage_2._0.Areas.Identity.Pages.Account
 {
@@ -30,13 +32,15 @@ namespace Garage_2._0.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<User> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IPersonNumberRepository _personNumberRepository;
 
         public RegisterModel(
             UserManager<User> userManager,
             IUserStore<User> userStore,
             SignInManager<User> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender, 
+            IPersonNumberRepository personNumberRepository)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +48,7 @@ namespace Garage_2._0.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _personNumberRepository = personNumberRepository;
         }
 
         /// <summary>
@@ -71,6 +76,23 @@ namespace Garage_2._0.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
+
+            [Required]
+            [MaxLength(40, ErrorMessage = "Last name cannot exceed 40 characters")]
+            [Display(Name = "First Name")]
+            public string FirstName { get; set; }
+
+
+            [Required]
+            [MaxLength(40, ErrorMessage = "Last name cannot exceed 40 characters")]
+            [Display(Name = "Last Name")]
+            public string LastName { get; set; }
+
+            [Required]
+            [StringLength(13, MinimumLength = 13, ErrorMessage ="Personal number must be 13 characters long.")]
+            [RegularExpression(@"\b\d{8}-\d{4}\b", ErrorMessage ="Personal number must be in the format of YYYYMMDD-XXXX")]
+            public string PersonalNumber { get; set; }
+
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
@@ -100,7 +122,6 @@ namespace Garage_2._0.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
-
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
@@ -113,7 +134,32 @@ namespace Garage_2._0.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
+                if(Input.FirstName == Input.LastName)
+                {
+                    ModelState.AddModelError("Input.LastName", "Last name cannot be the same as first name");
+                    return Page();
+                }
+                int positionOfDash = Input.PersonalNumber.Length - 5;
+                var PersonNrWithoutDash = Input.PersonalNumber.Remove(positionOfDash, 1);
+
+                if (!long.TryParse(PersonNrWithoutDash, out long PersonNr))
+                {
+                    ModelState.AddModelError("Input.PersonalNumber", "Please Enter a valid Personal Number");
+                    return Page();
+
+                }
+                if (!(await _personNumberRepository.IsUnique(PersonNr)))
+                {
+                    ModelState.AddModelError("Input.PersonalNumber", "Personal Number Must Be Unique");
+                    return Page();
+                }
+
                 var user = CreateUser();
+
+                user.FirstName = Input.FirstName;
+                user.LastName = Input.LastName;
+                user.PersonalNumber = PersonNr;
+                
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
