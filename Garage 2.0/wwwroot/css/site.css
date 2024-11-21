@@ -38,3 +38,9 @@ body {
 button a {
     text-decoration: none;
 }
+
+.alert {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 1.1rem;
+}
