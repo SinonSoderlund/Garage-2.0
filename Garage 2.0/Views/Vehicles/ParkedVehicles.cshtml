@@ -1,0 +1,61 @@
+﻿@model IEnumerable<ParkedVehicleViewModel>
+
+<form asp-action="ParkedVehiclesSearch" method="get" class="mb-3">
+    <label for="search">Search by Registration number:</label>
+    <div class="input-group mb-3">
+        <input type="text" name="searchField" class="form-control" placeholder="Enter registration number" />
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.OwnerId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OwnerFullName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.VehicleType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RegNr)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ParkedDuration)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Spots)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OwnerId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OwnerFullName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.VehicleType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RegNr)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ParkedDurationFormatted)
+                </td>
+                <th>
+                    @Html.DisplayNameFor(model => model.Spots)
+                </th>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                </td>
+            </tr>
+        }
+    </tbody>

@@ -12,6 +12,7 @@ using Garage_2._0.Models.ViewModels;
 using Garage_2._0.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Garage_2._0.Controllers
 {
@@ -31,7 +32,7 @@ namespace Garage_2._0.Controllers
             _context = context;
             _spotRepository = spotRepository;
             _feedbackRepository = feedbackMessageRepository;
-            _userManager = userManager;         
+            _userManager = userManager;
         }
 
 
@@ -168,7 +169,7 @@ namespace Garage_2._0.Controllers
                     _context.Add(newVehicle);
                     await _context.SaveChangesAsync();
 
-                 
+
                     await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
@@ -312,6 +313,58 @@ namespace Garage_2._0.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ParkedVehicles()
+        {
+            var vehicles =  _context.Vehicle
+                .Include(v => v.User)
+                .Include(v => v.VehicleType)
+                .Include(v => v.Spots)
+                .ToList();
+
+            var viewModelCollection = vehicles.Select(v => new ParkedVehicleViewModel
+            {
+                Id = v.Id,
+                OwnerFullName = $"{v.User.FirstName} + {v.User.LastName}",
+                OwnerId = v.UserId,
+                RegNr = v.RegNr,
+                VehicleType = v.VehicleType.Name,
+                Spots = v.Spots,
+                ArriveTime = v.ArriveTime,
+            });
+
+            return View(viewModelCollection);
+        }
+
+        public async Task<IActionResult> ParkedVehiclesSearch(string searchField)
+        {
+            if (!string.IsNullOrEmpty(searchField))
+            {
+                var vehicles = _context.Vehicle
+                    .Where(v => v.RegNr.Contains(searchField))
+                    .Include(v => v.User)
+                    .Include(v => v.VehicleType)
+                    .Include(v => v.Spots)
+                    .ToList();
+
+                var viewModelCollection = vehicles.Select(v => new ParkedVehicleViewModel
+                {
+                    Id = v.Id,
+                    OwnerFullName = $"{v.User.FirstName} + {v.User.LastName}",
+                    OwnerId = v.UserId,
+                    RegNr = v.RegNr,
+                    VehicleType = v.VehicleType.Name,
+                    Spots = v.Spots,
+                    ArriveTime = v.ArriveTime,
+                });
+                return View("ParkedVehicles", viewModelCollection);
+            }
+            else
+            {
+                return RedirectToAction(nameof(ParkedVehicles));
+            }
         }
 
         private bool VehicleExists(int id)
