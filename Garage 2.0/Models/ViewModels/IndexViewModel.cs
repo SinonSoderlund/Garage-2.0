@@ -8,7 +8,8 @@ namespace Garage_2._0.Models.ViewModels
     public class IndexViewModel
     {
         public int Id { get; set; }
-        
+        public string Owner { get; set; } //added owner prop 
+
         [DisplayName("Type of Vehicle")]
         public VehicleType VehicleType { get; set; }
 
@@ -47,6 +48,7 @@ namespace Garage_2._0.Models.ViewModels
             ArriveTime = vehicle.ArriveTime;
             RegNr = vehicle.RegNr;
             VehicleType = vehicle.VehicleType;
+            Owner = vehicle.User?.FirstName + " " + vehicle.User?.LastName;
         }
         /// <summary>
         /// Default constructor, sets strings to string.Empty and other fields to default.

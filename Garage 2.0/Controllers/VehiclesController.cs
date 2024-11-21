@@ -39,10 +39,22 @@ namespace Garage_2._0.Controllers
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
-            var model = await _context.Vehicle.ToListAsync();
+            var model = await _context.Vehicle
+                .Include(v => v.VehicleType)
+                .Include(v => v.User)
+                .ToListAsync();
+
             ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
-            return View(new UnitedIndexViewCollection(model, _price, await _spotRepository.GetAvailableSpots(), UIVC_State.full, await _feedbackRepository.GetMessage()));
+
+            return View(new UnitedIndexViewCollection(
+                model,
+                _price,
+                await _spotRepository.GetAvailableSpots(),
+                UIVC_State.full,
+                await _feedbackRepository.GetMessage()
+            ));
         }
+
 
         // Start Feature: Search area
         public async Task<IActionResult> SearchByRegNumber(string searchField)
@@ -119,62 +131,88 @@ namespace Garage_2._0.Controllers
         // GET: Vehicles/ParkVehicle
         public async Task<IActionResult> ParkVehicle()
         {
+            // Ensure user is logged in
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account"); // Redirect to login page if not logged in
+            }
+
             var vehicleTypes = await _context.VehicleTypes.ToListAsync();
             ViewBag.VehicleTypes = vehicleTypes.Select(v => new SelectListItem
             {
-                Value = v.Id.ToString(), // vehicleId as value
-                Text = v.Name // name as display text
+                Value = v.Id.ToString(),
+                Text = v.Name
             }).ToList();
             return View();
         }
 
         // POST: Vehicles/ParkVehicle
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
         {
-            var userId = _userManager.GetUserId(User);
-            var vehicleTypes = await _context.VehicleTypes.ToListAsync();
-            ViewBag.VehicleTypes = vehicleTypes.Select(v => new SelectListItem
+            // Ensure user is logged in
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
-                Value = v.Id.ToString(), // vehicleId as value
-                Text = v.Name // name as display text
-            }).ToList();
+                return RedirectToAction("Login", "Account");
+            }
 
             if (ModelState.IsValid)
             {
                 var availableSpotId = await _spotRepository.FindAvailableSpotId();
                 if (availableSpotId == 0) // No available spot was found if this is true
                 {
-                    ModelState.AddModelError("", "no spots available");
+                    ModelState.AddModelError("", "No spots available");
                     return View(vehicle);
                 }
 
                 if (await EnsureUnique(vehicle))
                 {
+                    // Create vehicle and associate with logged-in user
                     Vehicle newVehicle = new Vehicle(vehicle)
                     {
-                        Wheels = vehicle.Wheels,
-                        ArriveTime = vehicle.ArriveTime,
-                        Color = vehicle.Color,
-                        RegNr = vehicle.RegNr,
-                        Model = vehicle.Model,
-                        Brand = vehicle.Brand,
-                        VehicleTypeId = vehicle.VehicleTypeId,
-                        UserId = userId
+                        UserId = user.Id,  // Associate vehicle with user
+                        User = user
                     };
+                    _context.Add(newVehicle);
+                    // Set the VehicleType based on the selected type
+                    var vehicleType = await _context.VehicleTypes
+                        .FirstOrDefaultAsync(vt => vt.Id == vehicle.VehicleTypeId);
+
+                    if (vehicleType == null)
+                    {
+                        ModelState.AddModelError("", "Invalid vehicle type");
+                        return View(vehicle);
+                    }
+
+                    newVehicle.VehicleTypeId = vehicleType.Id;
+                    newVehicle.VehicleType = vehicleType;
+
                     _context.Add(newVehicle);
                     await _context.SaveChangesAsync();
 
-                 
+                    // Assign vehicle to spot
+                    await _spotRepository.AssignVehicleToSpot(availableSpotId, newVehicle.Id);
+
                     await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
                 else
+                {
                     ModelState.AddModelError("regNr", "Registration number must be unique");
+                }
             }
+
+            // Repopulate vehicle types if model state is invalid
+            var vehicleTypes = await _context.VehicleTypes.ToListAsync();
+            ViewBag.VehicleTypes = vehicleTypes.Select(v => new SelectListItem
+            {
+                Value = v.Id.ToString(),
+                Text = v.Name
+            }).ToList();
+
             return View(vehicle);
         }
 
