@@ -32,6 +32,15 @@ namespace Garage_2._0.Data
         {
             base.OnModelCreating(modelBuilder);
 
+
+
+            modelBuilder.Entity<User>()
+    .HasMany(u => u.Vehicles)
+    .WithOne(v => v.User)
+    .HasForeignKey(v => v.UserId)
+    .OnDelete(DeleteBehavior.Cascade);
+
+
             int GARAGE_SIZE = 8;
             for (int i = 1; i <= GARAGE_SIZE; i++)
             {
