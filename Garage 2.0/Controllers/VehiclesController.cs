@@ -23,12 +23,15 @@ namespace Garage_2._0.Controllers
         private readonly IFeedbackMessageRepository _feedbackRepository;
         private readonly UserManager<User> _userManager;
 
-        public VehiclesController(Garage_2_0Context context, ISpotRepository spotRepository)
+        public VehiclesController(Garage_2_0Context context,
+            ISpotRepository spotRepository,
+            IFeedbackMessageRepository feedbackMessageRepository,
+            UserManager<User> userManager)
         {
             _context = context;
             _spotRepository = spotRepository;
             _feedbackRepository = feedbackMessageRepository;
-            _userManager = userManager;         
+            _userManager = userManager;
         }
 
 
@@ -36,18 +39,9 @@ namespace Garage_2._0.Controllers
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
-            var model = await _context.Vehicle.Select(v => new IndexViewModel()
-            {
-                Id = v.Id,
-                VehicleType = v.VehicleType,
-                RegNr = v.RegNr,
-                ArriveTime = v.ArriveTime
-            }).ToListAsync();
-           
-            var availableSpots = await _spotRepository.GetAvailableSpots();
-            ViewBag.AvailableSpots = availableSpots.Count();
-            
-            return View(model);
+            var model = await _context.Vehicle.ToListAsync();
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
+            return View(new UnitedIndexViewCollection(model, _price, await _spotRepository.GetAvailableSpots(), UIVC_State.full, await _feedbackRepository.GetMessage()));
         }
 
         // Start Feature: Search area
@@ -139,31 +133,50 @@ namespace Garage_2._0.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-            public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
+        public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
+        {
+            var userId = _userManager.GetUserId(User);
+            var vehicleTypes = await _context.VehicleTypes.ToListAsync();
+            ViewBag.VehicleTypes = vehicleTypes.Select(v => new SelectListItem
             {
-                if (ModelState.IsValid)
+                Value = v.Id.ToString(), // vehicleId as value
+                Text = v.Name // name as display text
+            }).ToList();
+
+            if (ModelState.IsValid)
+            {
+                var availableSpotId = await _spotRepository.FindAvailableSpotId();
+                if (availableSpotId == 0) // No available spot was found if this is true
                 {
-                    var availableSpotId = await _spotRepository.FindAvailableSpotId();
-                    if (availableSpotId == 0) // No available spot was found if this is true
-                    {
-                        ModelState.AddModelError("", "no spots available");
-                        return View(vehicle);
-                    }
-                    
-                    if (await EnsureUnique(vehicle))
-                    {
-                        Vehicle toAdd = new Vehicle(vehicle);
-                        _context.Add(toAdd);
-                        await _context.SaveChangesAsync();
-                        await _spotRepository.AssignVehicleToSpot(availableSpotId, toAdd.Id);
-                        TempData["Message"] = "Vehicle successfully parked."; // feedback message
-                        return RedirectToAction(nameof(Index));
-                    }
-                    else
-                        ModelState.AddModelError("regNr", "Registration number must be unique");
+                    ModelState.AddModelError("", "no spots available");
+                    return View(vehicle);
                 }
-                return View(vehicle);
+
+                if (await EnsureUnique(vehicle))
+                {
+                    Vehicle newVehicle = new Vehicle(vehicle)
+                    {
+                        Wheels = vehicle.Wheels,
+                        ArriveTime = vehicle.ArriveTime,
+                        Color = vehicle.Color,
+                        RegNr = vehicle.RegNr,
+                        Model = vehicle.Model,
+                        Brand = vehicle.Brand,
+                        VehicleTypeId = vehicle.VehicleTypeId,
+                        UserId = userId
+                    };
+                    _context.Add(newVehicle);
+                    await _context.SaveChangesAsync();
+
+
+                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                    ModelState.AddModelError("regNr", "Registration number must be unique");
             }
+            return View(vehicle);
+        }
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
@@ -217,29 +230,12 @@ namespace Garage_2._0.Controllers
                 try
                 {
                     // Find and update the existing vehicle’s properties
-                    var parkedVehicle = await _context.Vehicle
-                    .Include(v => v.Spot)
-                    .FirstOrDefaultAsync(v => v.Id == id);
-
+                    var parkedVehicle = await _context.Vehicle.FindAsync(id);
                     if (parkedVehicle == null)
                     {
                         return NotFound();
                     }
-                    var originalType = parkedVehicle.VehicleType;
                     parkedVehicle.UpdateVehicle(viewModel);
-
-                    if (originalType != parkedVehicle.VehicleType)
-                    {
-                        var newSpotId = await FindAvailableSpotForVehicle(parkedVehicle.VehicleType);
-                        if (newSpotId == 0)
-                        {
-                            ModelState.AddModelError("", "No available spots for the new vehicle type.");
-                            return View(viewModel);
-                        }
-
-                        await _spotRepository.AssignVehicleToSpot(newSpotId, parkedVehicle.Id);
-                    }
-
                     _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
                     await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {parkedVehicle.RegNr}) sucessfully edited!", AlertType.success));
