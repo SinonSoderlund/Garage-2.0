@@ -16,9 +16,8 @@ namespace Garage_2._0
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Garage_2_0Context") ?? throw new InvalidOperationException("Connection string 'Garage_2_0Context' not found.")));
 
             builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
-                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<Garage_2_0Context>();
-
+                            .AddRoles<IdentityRole>()
+                            .AddEntityFrameworkStores<Garage_2_0Context>();
             builder.Services.AddScoped<ISpotRepository, SpotRepository>();
             builder.Services.AddScoped<IFeedbackMessageRepository, FeedbackMessageRepository>();
             builder.Services.AddScoped<IPersonNumberRepository, PersonNumberRepository>();
