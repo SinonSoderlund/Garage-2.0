@@ -7,6 +7,6 @@ namespace Garage_2._0.Models.Entities
         public long PersonalNumber { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-
+        public ICollection<Vehicle> Vehicles { get; set; }
     }
 }
