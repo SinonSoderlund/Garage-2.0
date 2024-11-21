@@ -177,8 +177,7 @@ namespace Garage_2._0.Controllers
         {
             if (id == null)
             {
-                TempData["AlertMessage"] = "Invalid request. Vehicle not found.";
-                TempData["AlertType"] = "warning";
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -188,8 +187,8 @@ namespace Garage_2._0.Controllers
 
             if (vehicle == null)
             {
-                TempData["AlertMessage"] = "You are not authorized to view this vehicle.";
-                TempData["AlertType"] = "danger"; 
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to View this vehicle.", AlertType.danger));
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -202,8 +201,7 @@ namespace Garage_2._0.Controllers
         {
             if (id == null)
             {
-                TempData["AlertMessage"] = "Invalid request. Vehicle not found.";
-                TempData["AlertType"] = "warning"; 
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -213,8 +211,7 @@ namespace Garage_2._0.Controllers
 
             if (vehicle == null)
             {
-                TempData["AlertMessage"] = "You are not authorized to Edit this vehicle.";
-                TempData["AlertType"] = "danger"; 
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -237,8 +234,8 @@ namespace Garage_2._0.Controllers
             var vehicle = await _context.Vehicle.FirstOrDefaultAsync(v => v.Id == id && v.UserId == userId);
             if (vehicle == null)
             {
-                TempData["AlertMessage"] = "You are not authorized to Edit this vehicle.";
-                TempData["AlertType"] = "danger";
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -283,8 +280,7 @@ namespace Garage_2._0.Controllers
         {
             if (id == null)
             {
-                TempData["AlertMessage"] = "Invalid request. Vehicle not found.";
-                TempData["AlertType"] = "warning"; 
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -294,8 +290,7 @@ namespace Garage_2._0.Controllers
 
             if (vehicle == null)
             {
-                TempData["AlertMessage"] = "You are not authorized to Check-out this vehicle.";
-                TempData["AlertType"] = "danger"; 
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
             DetailViewModel output = new DetailViewModel(vehicle);
@@ -313,8 +308,7 @@ namespace Garage_2._0.Controllers
 
             if (vehicle == null)
             {
-                TempData["AlertMessage"] = "You are not authorized to Check-out this vehicle.";
-                TempData["AlertType"] = "danger"; 
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
