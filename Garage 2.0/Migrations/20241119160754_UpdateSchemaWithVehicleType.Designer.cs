@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Garage_2._0.Migrations
 {
     [DbContext(typeof(Garage_2_0Context))]
-    [Migration("20241119110732_test")]
-    partial class test
+    [Migration("20241119160754_UpdateSchemaWithVehicleType")]
+    partial class UpdateSchemaWithVehicleType
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -139,8 +139,8 @@ namespace Garage_2._0.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PersonalNumber")
-                        .HasColumnType("int");
+                    b.Property<long>("PersonalNumber")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");

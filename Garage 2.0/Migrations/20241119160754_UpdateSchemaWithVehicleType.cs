@@ -5,7 +5,7 @@
 namespace Garage_2._0.Migrations
 {
     /// <inheritdoc />
-    public partial class test : Migration
+    public partial class UpdateSchemaWithVehicleType : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
