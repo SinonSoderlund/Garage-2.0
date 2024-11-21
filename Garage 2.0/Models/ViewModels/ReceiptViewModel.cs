@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using Garage_2._0.Models.Entities;
+using Garage_2._0.Utilities;
 
 namespace Garage_2._0.Models.ViewModels
 {
@@ -69,7 +70,7 @@ namespace Garage_2._0.Models.ViewModels
             Model = vehicle.Model;
             VehicleType = vehicle.VehicleType;
             CheckoutTime = DateTime.Now;
-            Price = getPrice(ParkedDuration.Ticks, price);
+            Price = ViewUtilities.getPrice(ParkedDuration.Ticks, price);
             PriceText = Price.ToString("C");
         }
 
@@ -82,18 +83,7 @@ namespace Garage_2._0.Models.ViewModels
             TimeSpan t = ParkedDuration;
             return $"{t.Days} Days, {t.Hours} Hours, {t.Minutes} Minutes, {t.Seconds} Seconds.";
         }
-        /// <summary>
-        /// Calculates the cost of parking
-        /// </summary>
-        /// <param name="time">time in timespand ticks for parking duration</param>
-        /// <param name="price">hourly price of parking</param>
-        /// <returns>cost of parking</returns>
-        private decimal getPrice(long time, decimal price)
-        {
-            decimal dTime = Convert.ToDecimal(time);
-            decimal dDevide = Convert.ToDecimal(TimeSpan.TicksPerHour);
-            return (dTime/dDevide)*price;
-        }
+
 
 
         /// <summary>
@@ -132,8 +122,8 @@ namespace Garage_2._0.Models.ViewModels
             Model = model;
             VehicleType = vehicleType;
             CheckoutTime = DateTime.Now;
-            Price = getPrice(ParkedDuration.Ticks, price);
-            PriceText = Price.ToString("C");
+            Price = ViewUtilities.getPrice(ParkedDuration.Ticks, price);
+            PriceText = ViewUtilities.PriceToString(Price); 
 
         }
         /// <summary>

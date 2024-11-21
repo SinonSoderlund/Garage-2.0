@@ -9,6 +9,9 @@ using Garage_2._0.Data;
 using Garage_2._0.Data.Repositories;
 using Garage_2._0.Models.Entities;
 using Garage_2._0.Models.ViewModels;
+using Garage_2._0.Enums;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Identity;
 
 namespace Garage_2._0.Controllers
 {
@@ -16,14 +19,19 @@ namespace Garage_2._0.Controllers
     {
         private readonly Garage_2_0Context _context;
         private readonly ISpotRepository _spotRepository;
-        private const int MotorcyclesPerSpot = 3;
-
+        private readonly decimal _price = 16.64M;
+        private readonly IFeedbackMessageRepository _feedbackRepository;
+        private readonly UserManager<User> _userManager;
 
         public VehiclesController(Garage_2_0Context context, ISpotRepository spotRepository)
         {
             _context = context;
             _spotRepository = spotRepository;
+            _feedbackRepository = feedbackMessageRepository;
+            _userManager = userManager;         
         }
+
+
 
         // GET: Vehicles
         public async Task<IActionResult> Index()
@@ -33,8 +41,7 @@ namespace Garage_2._0.Controllers
                 Id = v.Id,
                 VehicleType = v.VehicleType,
                 RegNr = v.RegNr,
-                ArriveTime = v.ArriveTime,
-                SpotNumber = v.Spot.SpotNumber                
+                ArriveTime = v.ArriveTime
             }).ToListAsync();
            
             var availableSpots = await _spotRepository.GetAvailableSpots();
@@ -42,25 +49,14 @@ namespace Garage_2._0.Controllers
             
             return View(model);
         }
-    
+
         // Start Feature: Search area
         public async Task<IActionResult> SearchByRegNumber(string searchField)
         {
             if (!string.IsNullOrEmpty(searchField))
             {
-                var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField))
-                .Select(v => new IndexViewModel()
-                {
-                    Id = v.Id,
-                    RegNr = v.RegNr,
-                    VehicleType = v.VehicleType,
-                    ArriveTime = v.ArriveTime,
-                });
-                
-                var availableSpots = await _spotRepository.GetAvailableSpots();
-                ViewBag.AvailableSpots = availableSpots.Count();
-                
-                return View("Index", await results.ToListAsync());
+                var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField));
+                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), _price, await _spotRepository.GetAvailableSpots()));
             }
             else
             {
@@ -75,38 +71,18 @@ namespace Garage_2._0.Controllers
         {
             var sortedVehicles = await _context.Vehicle
                 .OrderBy(v => v.ArriveTime)
-                .Select(v => new IndexViewModel()
-                {
-                    Id = v.Id,
-                    RegNr = v.RegNr,
-                    VehicleType = v.VehicleType,
-                    ArriveTime = v.ArriveTime
-                })
                 .ToListAsync();
-            
-            var availableSpots = await _spotRepository.GetAvailableSpots();
-            ViewBag.AvailableSpots = availableSpots.Count();
-            
-            return View("Index", sortedVehicles);
+
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAvailableSpots()));
         }
 
         public async Task<IActionResult> SortByDateDescending()
         {
             var sortedVehicles = await _context.Vehicle
                 .OrderByDescending(v => v.ArriveTime)
-                .Select(v => new IndexViewModel()
-                {
-                    Id = v.Id,
-                    RegNr = v.RegNr,
-                    VehicleType = v.VehicleType,
-                    ArriveTime = v.ArriveTime
-                })
                 .ToListAsync();
-            
-            var availableSpots = await _spotRepository.GetAvailableSpots();
-            ViewBag.AvailableSpots = availableSpots.Count();
 
-            return View("Index", sortedVehicles);
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAvailableSpots()));
         }
 
         // End Feature: sort by date
@@ -114,22 +90,11 @@ namespace Garage_2._0.Controllers
         // Start: Filter by Vehicle type
         public async Task<IActionResult> FilterByVehicleType(string vehicleType)
         {
-            if (!string.IsNullOrEmpty(vehicleType) && Enum.TryParse(vehicleType, out VehicleType type))
+            if (!string.IsNullOrEmpty(vehicleType))
             {
                 var filteredVehicles = _context.Vehicle
-                    .Where(v => v.VehicleType == type)
-                    .Select(v => new IndexViewModel()
-                    {
-                        Id = v.Id,
-                        RegNr = v.RegNr,
-                        VehicleType = v.VehicleType,
-                        ArriveTime = v.ArriveTime
-                    });
-                
-                var availableSpots = await _spotRepository.GetAvailableSpots();
-                ViewBag.AvailableSpots = availableSpots.Count();
-
-                return View("Index", await filteredVehicles.ToListAsync());
+                    .Where(v => v.VehicleType.Name == vehicleType);
+                return View("Index", new UnitedIndexViewCollection(await filteredVehicles.ToListAsync(), _price, await _spotRepository.GetAvailableSpots(), UIVC_State.filteredByType));
             }
 
             // If no filter is applied or invalid, show all vehicles
@@ -158,8 +123,14 @@ namespace Garage_2._0.Controllers
         }
 
         // GET: Vehicles/ParkVehicle
-        public IActionResult ParkVehicle()
+        public async Task<IActionResult> ParkVehicle()
         {
+            var vehicleTypes = await _context.VehicleTypes.ToListAsync();
+            ViewBag.VehicleTypes = vehicleTypes.Select(v => new SelectListItem
+            {
+                Value = v.Id.ToString(), // vehicleId as value
+                Text = v.Name // name as display text
+            }).ToList();
             return View();
         }
 
@@ -193,22 +164,6 @@ namespace Garage_2._0.Controllers
                 }
                 return View(vehicle);
             }
-        private async Task<int> FindAvailableSpotForVehicle(VehicleType vehicleType)
-        {
-            //if (vehicleType == VehicleType.Motorcycle)
-            //{
-            //    var spotWithSpace = await _context.Spot
-            //        .Where(s => s.Vehicles.Count < MotorcyclesPerSpot)
-            //        .OrderBy(s => s.Vehicles.Count)
-            //        .FirstOrDefaultAsync();
-
-            //    return spotWithSpace?.Id ?? 0;
-            //}
-            //else
-            {
-                return await _spotRepository.FindAvailableSpotId();
-            }
-        }
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
@@ -236,7 +191,7 @@ namespace Garage_2._0.Controllers
             }
 
             var viewModel = new DetailViewModel(vehicle);
-         
+
 
             return View(viewModel);
         }
@@ -287,6 +242,7 @@ namespace Garage_2._0.Controllers
 
                     _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
+                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {parkedVehicle.RegNr}) sucessfully edited!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -336,6 +292,7 @@ namespace Garage_2._0.Controllers
             if (vehicle != null)
             {
                 _context.Vehicle.Remove(vehicle);
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
             }
 
             await _context.SaveChangesAsync();
@@ -352,7 +309,8 @@ namespace Garage_2._0.Controllers
             {
                 _context.Vehicle.Remove(vehicle);
                 await _context.SaveChangesAsync();
-                ReceiptViewModel output = new ReceiptViewModel(vehicle, 16.64M);
+                ReceiptViewModel output = new ReceiptViewModel(vehicle, _price);
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
                 return View(output);
             }
 

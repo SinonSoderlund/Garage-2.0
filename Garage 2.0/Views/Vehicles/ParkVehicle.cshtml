@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="ParkVehicle" id="parkVehicleForm" onsubmit="return validateForm()">
+        <form asp-action="ParkVehicle" id="parkVehicleForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <partial name="_VehicleInputs"></partial>
             <div class="form-group" id="parker">
@@ -28,18 +28,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script type="text/javascript">
-        function validateForm() {
-            const form = document.getElementById("parkVehicleForm");
-            // Check if all fields are valid
-            if (form.checkValidity()) {
-                alert('Vehicle is being parked.');
-                return true;
-            } else {
-                form.reportValidity();
-                return false;
-            }
-        }
-    </script>
 }
