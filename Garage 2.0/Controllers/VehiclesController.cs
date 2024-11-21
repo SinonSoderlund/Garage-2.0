@@ -12,9 +12,11 @@ using Garage_2._0.Models.ViewModels;
 using Garage_2._0.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Garage_2._0.Controllers
 {
+    [Authorize]
     public class VehiclesController : Controller
     {
         private readonly Garage_2_0Context _context;

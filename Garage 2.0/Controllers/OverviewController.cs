@@ -1,10 +1,12 @@
 ﻿using Garage_2._0.Data;
 using Garage_2._0.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Garage_2._0.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class OverviewController : Controller
     {
         private readonly Garage_2_0Context _context;
