@@ -34,9 +34,9 @@
     <label for="vehicleType">Filter by Vehicle Type:</label>
     <select name="vehicleType" class="form-select" id="vehicleType">
         <option value="">All Types</option>
-        @foreach (var type in Enum.GetValues(typeof(Garage_2._0.VehicleType)))
+        @foreach (VehicleType type in ViewBag.VehicleTypes)
         {
-            <option value="@type">@type</option>
+            <option value="@type.Name">@type.Name</option>
         }
     </select>
     <br />
