@@ -35,13 +35,13 @@ namespace Garage_2._0.Controllers
         }
 
 
-
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
             var model = await _context.Vehicle.ToListAsync();
             ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
-            return View(new UnitedIndexViewCollection(model, _price, await _spotRepository.GetAllSpots(), UIVC_State.full, await _feedbackRepository.GetMessage()));
+            return View(new UnitedIndexViewCollection(model, _price, await _spotRepository.GetAllSpots(),
+                UIVC_State.full, await _feedbackRepository.GetMessage()));
         }
 
         // Start Feature: Search area
@@ -50,7 +50,9 @@ namespace Garage_2._0.Controllers
             if (!string.IsNullOrEmpty(searchField))
             {
                 var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField));
-                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), _price, await _spotRepository.GetAllSpots()));
+                return View("Index",
+                    new UnitedIndexViewCollection(await results.ToListAsync(), _price,
+                        await _spotRepository.GetAllSpots()));
             }
             else
             {
@@ -67,7 +69,8 @@ namespace Garage_2._0.Controllers
                 .OrderBy(v => v.ArriveTime)
                 .ToListAsync();
 
-            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAllSpots()));
+            return View("Index",
+                new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAllSpots()));
         }
 
         public async Task<IActionResult> SortByDateDescending()
@@ -76,7 +79,8 @@ namespace Garage_2._0.Controllers
                 .OrderByDescending(v => v.ArriveTime)
                 .ToListAsync();
 
-            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAllSpots()));
+            return View("Index",
+                new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAllSpots()));
         }
 
         // End Feature: sort by date
@@ -88,7 +92,9 @@ namespace Garage_2._0.Controllers
             {
                 var filteredVehicles = _context.Vehicle
                     .Where(v => v.VehicleType.Name == vehicleType);
-                return View("Index", new UnitedIndexViewCollection(await filteredVehicles.ToListAsync(), _price, await _spotRepository.GetAllSpots(), UIVC_State.filteredByType));
+                return View("Index",
+                    new UnitedIndexViewCollection(await filteredVehicles.ToListAsync(), _price,
+                        await _spotRepository.GetAllSpots(), UIVC_State.filteredByType));
             }
 
             // If no filter is applied or invalid, show all vehicles
@@ -111,6 +117,7 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
+
             DetailViewModel output = new DetailViewModel(vehicle);
 
             return View(output);
@@ -189,13 +196,13 @@ namespace Garage_2._0.Controllers
                 _context.SpotAllocations.Add(spotAllocation);
                 await _context.SaveChangesAsync();
 
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
+                await _feedbackRepository.SetMessage(new FeedbackMessage(
+                    $"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
                 return View(vehicle);
-
             }
-            
-    // If we got here, something went wrong and ModelState is invalid
-    return View(vehicle);
+
+            // If we got here, something went wrong and ModelState is invalid
+            return View(vehicle);
         }
 
         /// <summary>
@@ -207,8 +214,10 @@ namespace Garage_2._0.Controllers
         public async Task<bool> EnsureUnique(DetailViewModel toVerify, int Id = -1)
         {
             toVerify.Id = Id;
-            return await _context.Vehicle.FirstOrDefaultAsync(v => (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
+            return await _context.Vehicle.FirstOrDefaultAsync(v =>
+                (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
         }
+
         // GET: Vehicles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -255,10 +264,12 @@ namespace Garage_2._0.Controllers
                     {
                         return NotFound();
                     }
+
                     parkedVehicle.UpdateVehicle(viewModel);
                     _context.Update(parkedVehicle);
                     await _context.SaveChangesAsync();
-                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {parkedVehicle.RegNr}) sucessfully edited!", AlertType.success));
+                    await _feedbackRepository.SetMessage(new FeedbackMessage(
+                        $"Vehicle (registration number {parkedVehicle.RegNr}) sucessfully edited!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -273,8 +284,10 @@ namespace Garage_2._0.Controllers
                     }
                 }
             }
+
             return View(viewModel);
         }
+
         private async Task<bool> VehicleExistsAsync(int id)
         {
             throw new NotImplementedException();
@@ -294,6 +307,7 @@ namespace Garage_2._0.Controllers
             {
                 return NotFound();
             }
+
             DetailViewModel output = new DetailViewModel(vehicle);
 
             return View(output);
@@ -308,7 +322,8 @@ namespace Garage_2._0.Controllers
             if (vehicle != null)
             {
                 _context.Vehicle.Remove(vehicle);
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
             }
 
             await _context.SaveChangesAsync();
@@ -326,7 +341,8 @@ namespace Garage_2._0.Controllers
                 _context.Vehicle.Remove(vehicle);
                 await _context.SaveChangesAsync();
                 ReceiptViewModel output = new ReceiptViewModel(vehicle, _price);
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
                 return View(output);
             }
 
