@@ -8,7 +8,5 @@
         public string Color { get; set; }
         public string VehicleType { get; set; }
         public DateTime ArriveTime { get; set; }
-
-
     }
 }

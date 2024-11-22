@@ -42,17 +42,17 @@ namespace Garage_2._0.Controllers
         {
             if (string.IsNullOrEmpty(userId))
             {
-                return NotFound(); // Handle invalid userId
+                return NotFound(); 
             }
 
             var user = _context.Users
                 .Include(u => u.Vehicles)
-                .ThenInclude(v => v.VehicleType) // Include VehicleType to avoid null reference
+                .ThenInclude(v => v.VehicleType) 
                 .FirstOrDefault(u => u.Id == userId);
 
             if (user == null)
             {
-                return NotFound(); // Handle case where user is not found
+                return NotFound(); 
             }
 
             var vehicles = user.Vehicles.Select(v => new UserVehicleViewModel
@@ -61,15 +61,12 @@ namespace Garage_2._0.Controllers
                 Model = v.Model,
                 Brand = v.Brand,
                 Color = v.Color,
-                VehicleType = v.VehicleType != null ? v.VehicleType.Name : "Unknown",
+                VehicleType = v.VehicleType != null ? v.VehicleType.Name : "Vehicle", 
                 ArriveTime = v.ArriveTime
             }).ToList();
 
             ViewBag.UserName = $"{user.FirstName} {user.LastName}";
             return View(vehicles);
         }
-
-
-
     }
 }

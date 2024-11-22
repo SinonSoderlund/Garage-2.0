@@ -181,14 +181,15 @@ namespace Garage_2._0.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var userId = _userManager.GetUserId(User); // Get logged-in user ID
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
             var vehicle = await _context.Vehicle
-                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId); // Ensure the user owns the vehicle
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
                 await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to View this vehicle.", AlertType.danger));
-
                 return RedirectToAction(nameof(Index));
             }
 
@@ -205,9 +206,11 @@ namespace Garage_2._0.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var userId = _userManager.GetUserId(User);
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
             var vehicle = await _context.Vehicle
-                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
@@ -224,18 +227,20 @@ namespace Garage_2._0.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, DetailViewModel viewModel)
         {
-            var userId = _userManager.GetUserId(User);
-
             if (id != viewModel.Id)
             {
                 return NotFound();
             }
 
-            var vehicle = await _context.Vehicle.FirstOrDefaultAsync(v => v.Id == id && v.UserId == userId);
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
+            var vehicle = await _context.Vehicle
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
+
             if (vehicle == null)
             {
                 await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
-
                 return RedirectToAction(nameof(Index));
             }
 
@@ -284,9 +289,11 @@ namespace Garage_2._0.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var userId = _userManager.GetUserId(User);
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
             var vehicle = await _context.Vehicle
-                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
@@ -302,9 +309,11 @@ namespace Garage_2._0.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckOutConfirmed(int id)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
             var vehicle = await _context.Vehicle
-                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
