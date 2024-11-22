@@ -12,9 +12,11 @@ using Garage_2._0.Models.ViewModels;
 using Garage_2._0.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Garage_2._0.Controllers
 {
+    [Authorize]
     public class VehiclesController : Controller
     {
         private readonly Garage_2_0Context _context;
@@ -96,26 +98,6 @@ namespace Garage_2._0.Controllers
         }
         // End: Filter by Vehicle type
 
-
-        // GET: Vehicles/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var vehicle = await _context.Vehicle
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (vehicle == null)
-            {
-                return NotFound();
-            }
-            DetailViewModel output = new DetailViewModel(vehicle);
-
-            return View(output);
-        }
-
         // GET: Vehicles/ParkVehicle
         public async Task<IActionResult> ParkVehicle()
         {
@@ -189,27 +171,58 @@ namespace Garage_2._0.Controllers
             toVerify.Id = Id;
             return await _context.Vehicle.FirstOrDefaultAsync(v => (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
         }
+
+        // GET: Vehicles/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
+            }
+
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
+            var vehicle = await _context.Vehicle
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
+
+            if (vehicle == null)
+            {
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to View this vehicle.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
+            }
+
+            DetailViewModel output = new DetailViewModel(vehicle);
+            return View(output);
+        }
+
         // GET: Vehicles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
-                return NotFound();
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
             }
 
-            var vehicle = await _context.Vehicle.FindAsync(id);
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
+            var vehicle = await _context.Vehicle
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
+
             if (vehicle == null)
             {
-                return NotFound();
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
             }
 
             var viewModel = new DetailViewModel(vehicle);
-
-
             return View(viewModel);
         }
 
-        // POST: Vehicles/Edit/5 
+        // POST: Vehicles/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, DetailViewModel viewModel)
@@ -217,6 +230,18 @@ namespace Garage_2._0.Controllers
             if (id != viewModel.Id)
             {
                 return NotFound();
+            }
+
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
+            var vehicle = await _context.Vehicle
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
+
+            if (vehicle == null)
+            {
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
             }
 
             if (ModelState.IsValid)
@@ -229,16 +254,10 @@ namespace Garage_2._0.Controllers
 
                 try
                 {
-                    // Find and update the existing vehicle’s properties
-                    var parkedVehicle = await _context.Vehicle.FindAsync(id);
-                    if (parkedVehicle == null)
-                    {
-                        return NotFound();
-                    }
-                    parkedVehicle.UpdateVehicle(viewModel);
-                    _context.Update(parkedVehicle);
+                    vehicle.UpdateVehicle(viewModel);
+                    _context.Update(vehicle);
                     await _context.SaveChangesAsync();
-                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {parkedVehicle.RegNr}) sucessfully edited!", AlertType.success));
+                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) successfully edited!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -255,27 +274,33 @@ namespace Garage_2._0.Controllers
             }
             return View(viewModel);
         }
+
         private async Task<bool> VehicleExistsAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        // GET: Vehicles/Delete/5
+        // GET: Vehicles/CheckOut/5
         public async Task<IActionResult> CheckOut(int? id)
         {
             if (id == null)
             {
-                return NotFound();
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
             }
+
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
 
             var vehicle = await _context.Vehicle
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
+
             if (vehicle == null)
             {
-                return NotFound();
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
             }
             DetailViewModel output = new DetailViewModel(vehicle);
-
             return View(output);
         }
 
@@ -284,13 +309,20 @@ namespace Garage_2._0.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckOutConfirmed(int id)
         {
-            var vehicle = await _context.Vehicle.FindAsync(id);
-            if (vehicle != null)
+            var userId = _userManager.GetUserId(User); 
+            var isAdmin = User.IsInRole("Admin"); 
+
+            var vehicle = await _context.Vehicle
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
+
+            if (vehicle == null)
             {
-                _context.Vehicle.Remove(vehicle);
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
             }
 
+            _context.Vehicle.Remove(vehicle);
+            await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
