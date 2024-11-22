@@ -58,21 +58,33 @@
     The garage is full.
 </div> *@
 
-@foreach(Spot s in Model.SpotViewModel.SpotCollection) 
-{
-    <div class="border-5"></div>
-}
+<div class="parking-slot-ctr">
+    @foreach (Spot s in Model.SpotViewModel.SpotCollection)
+    {
+    <div class="parking-slot">
+        <div class="parking-slot-bar-container">
+            @foreach (SpotAllocation sa in s.SpotAllocations)
+            {
+            <div class="parking-slot-bar"
+                 style="height: @((sa.Fraction * 100).ToString("F0"))%; background-color: @sa.Vehicle.Color;">
+                        <span class="tooltip">
+                            Vehicle: @sa.Vehicle.RegNr<br />
+                            Allocation: @(sa.Fraction * 100)%
+                        </span>
+            </div>
+            }
+        </div>
+    </div>
+    }
+</div>
+
 
 @* <button class="disabled"> *@
 @*     Park Vehicle *@
 @* </button> *@
-}
-else
-{
 <button class="btn btn-success">
     <a asp-action="ParkVehicle" class="text-white">Park Vehicle</a>
 </button>
-}
 
 @if (Model.UIVCModelState != UIVC_State.empty)
 {
