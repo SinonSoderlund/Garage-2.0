@@ -17,6 +17,8 @@ namespace Garage_2._0.Data
 
         public DbSet<Vehicle> Vehicle { get; set; } = default!;
         public DbSet<Spot> Spots { get; set; } = default!;
+
+        public DbSet<SpotAllocation> SpotAllocations { get; set; } = default!;  
         public DbSet<VehicleType> VehicleTypes { get; set; } = default!;
 
         public DbSet<FeedbackMessage> FeedbackMessage { get; set; } = default!;

@@ -31,7 +31,7 @@ namespace Garage_2._0.Controllers
             _context = context;
             _spotRepository = spotRepository;
             _feedbackRepository = feedbackMessageRepository;
-            _userManager = userManager;         
+            _userManager = userManager;
         }
 
 
@@ -41,7 +41,7 @@ namespace Garage_2._0.Controllers
         {
             var model = await _context.Vehicle.ToListAsync();
             ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
-            return View(new UnitedIndexViewCollection(model, _price, await _spotRepository.GetAvailableSpots(), UIVC_State.full, await _feedbackRepository.GetMessage()));
+            return View(new UnitedIndexViewCollection(model, _price, await _spotRepository.GetAllSpots(), UIVC_State.full, await _feedbackRepository.GetMessage()));
         }
 
         // Start Feature: Search area
@@ -50,7 +50,7 @@ namespace Garage_2._0.Controllers
             if (!string.IsNullOrEmpty(searchField))
             {
                 var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField));
-                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), _price, await _spotRepository.GetAvailableSpots()));
+                return View("Index", new UnitedIndexViewCollection(await results.ToListAsync(), _price, await _spotRepository.GetAllSpots()));
             }
             else
             {
@@ -67,7 +67,7 @@ namespace Garage_2._0.Controllers
                 .OrderBy(v => v.ArriveTime)
                 .ToListAsync();
 
-            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAvailableSpots()));
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAllSpots()));
         }
 
         public async Task<IActionResult> SortByDateDescending()
@@ -76,7 +76,7 @@ namespace Garage_2._0.Controllers
                 .OrderByDescending(v => v.ArriveTime)
                 .ToListAsync();
 
-            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAvailableSpots()));
+            return View("Index", new UnitedIndexViewCollection(sortedVehicles, _price, await _spotRepository.GetAllSpots()));
         }
 
         // End Feature: sort by date
@@ -88,7 +88,7 @@ namespace Garage_2._0.Controllers
             {
                 var filteredVehicles = _context.Vehicle
                     .Where(v => v.VehicleType.Name == vehicleType);
-                return View("Index", new UnitedIndexViewCollection(await filteredVehicles.ToListAsync(), _price, await _spotRepository.GetAvailableSpots(), UIVC_State.filteredByType));
+                return View("Index", new UnitedIndexViewCollection(await filteredVehicles.ToListAsync(), _price, await _spotRepository.GetAllSpots(), UIVC_State.filteredByType));
             }
 
             // If no filter is applied or invalid, show all vehicles
@@ -145,37 +145,57 @@ namespace Garage_2._0.Controllers
 
             if (ModelState.IsValid)
             {
-                var availableSpotId = await _spotRepository.FindAvailableSpotId();
-                if (availableSpotId == 0) // No available spot was found if this is true
+                var vehicleType = await _context.VehicleTypes.FindAsync(vehicle.VehicleTypeId);
+                if (vehicleType == null)
                 {
-                    ModelState.AddModelError("", "no spots available");
+                    ModelState.AddModelError("", "Invalid Vehicle Type");
                     return View(vehicle);
                 }
 
-                if (await EnsureUnique(vehicle))
-                {
-                    Vehicle newVehicle = new Vehicle(vehicle)
-                    {
-                        Wheels = vehicle.Wheels,
-                        ArriveTime = vehicle.ArriveTime,
-                        Color = vehicle.Color,
-                        RegNr = vehicle.RegNr,
-                        Model = vehicle.Model,
-                        Brand = vehicle.Brand,
-                        VehicleTypeId = vehicle.VehicleTypeId,
-                        UserId = userId
-                    };
-                    _context.Add(newVehicle);
-                    await _context.SaveChangesAsync();
+                int foundSpotId = await _spotRepository.FindSpotForVehicle(vehicleType.SpotSize);
 
-                 
-                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
-                    return RedirectToAction(nameof(Index));
+                if (foundSpotId == 0)
+                {
+                    ModelState.AddModelError("", "No room for a vehicle of this size");
+                    return View(vehicle);
                 }
-                else
+
+                if (!await EnsureUnique(vehicle))
+                {
                     ModelState.AddModelError("regNr", "Registration number must be unique");
+                    return View(vehicle);
+                }
+
+                var newVehicle = new Vehicle
+                {
+                    Wheels = vehicle.Wheels,
+                    ArriveTime = DateTime.Now, // Automatically set arrival time to now
+                    Color = vehicle.Color,
+                    RegNr = vehicle.RegNr,
+                    Model = vehicle.Model,
+                    Brand = vehicle.Brand,
+                    VehicleTypeId = vehicle.VehicleTypeId,
+                    UserId = userId
+                };
+                _context.Vehicle.Add(newVehicle);
+                await _context.SaveChangesAsync();
+
+                var spotAllocation = new SpotAllocation
+                {
+                    SpotId = foundSpotId,
+                    VehicleId = newVehicle.Id,
+                    Fraction = vehicleType.SpotSize
+                };
+                _context.SpotAllocations.Add(spotAllocation);
+                await _context.SaveChangesAsync();
+
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
+                return View(vehicle);
+
             }
-            return View(vehicle);
+            
+    // If we got here, something went wrong and ModelState is invalid
+    return View(vehicle);
         }
 
         /// <summary>

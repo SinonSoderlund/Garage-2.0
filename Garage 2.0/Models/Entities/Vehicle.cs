@@ -27,7 +27,7 @@ namespace Garage_2._0.Models.Entities
         public int VehicleTypeId { get; set; }
         public VehicleType VehicleType { get; set; } // nav prop
 
-        public ICollection<Spot> Spots { get; set; }
+        public ICollection<SpotAllocation> SpotAllocations { get; set; } // navigation property
 
         public string UserId { get; set; }
         public User User { get; set; }

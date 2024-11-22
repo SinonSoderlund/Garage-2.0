@@ -12,34 +12,19 @@ public class SpotRepository : ISpotRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Spot>> GetAvailableSpots()
+    public async Task<int> FindSpotForVehicle(decimal vehicleSize)
     {
-        return await _context.Spots.Where(s => s.VehicleId == null).ToListAsync();
-    }
-    
-    public async Task<int> FindAvailableSpotId()
-    {
-        var availableSpotId = await _context.Spots
-            .Where(s => s.VehicleId == null) // See if spot is available
+        return await _context.Spots
+            .Where(s => s.SpotAllocations.Sum(sa => sa.Fraction) + vehicleSize <= 1.0m)
             .Select(s => s.Id)
-            .FirstOrDefaultAsync(); // returns first found empty spot in database where value is null, 0 if no spot is found
-        
-        return availableSpotId;
+            .FirstOrDefaultAsync();
     }
 
-    public async Task<bool> AssignVehicleToSpot(int spotId, int vehicleId)
+    public async Task<IEnumerable<Spot>> GetAllSpots()
     {
-        var spot = await _context.Spots.FindAsync(spotId); // gets a spot from Spots table with given id
-        
-        // Check if the spot exists and that it doesn't contain a VehicleId (which means a vehicle is parked here).
-        if (spot != null && spot.VehicleId == null) 
-        {
-            spot.VehicleId = vehicleId; // assign vehicle to the spot
-            await _context.SaveChangesAsync(); // save changes to database
-            return true;
-        }
-
-        return false;
+        return await _context.Spots
+            .Include(s => s.SpotAllocations)
+            .ToListAsync();
     }
 
 }

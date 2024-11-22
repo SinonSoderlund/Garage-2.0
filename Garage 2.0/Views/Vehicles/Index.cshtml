@@ -50,13 +50,19 @@
         @Model.FeedbackBannerMessage.Message
     </div>
 }
-
+@* 
 <h3>Available Spots: @Model.SpotViewModel.AvailableSpots</h3>
 @if (Model.SpotViewModel.AvailableSpots == 0)
 {
 <div class="alert alert-warning">
     The garage is full.
-</div>
+</div> *@
+
+@foreach(Spot s in Model.SpotViewModel.SpotCollection) 
+{
+    <div class="border-5"></div>
+}
+
 @* <button class="disabled"> *@
 @*     Park Vehicle *@
 @* </button> *@
