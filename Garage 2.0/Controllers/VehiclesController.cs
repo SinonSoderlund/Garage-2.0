@@ -139,16 +139,30 @@ namespace Garage_2._0.Controllers
             var vehicleTypes = await _context.VehicleTypes.ToListAsync();
             ViewBag.VehicleTypes = vehicleTypes.Select(v => new SelectListItem
             {
-                Value = v.Id.ToString(), // vehicleId as value
-                Text = v.Name // name as display text
+                Value = v.Id.ToString(),
+                Text = v.Name
             }).ToList();
 
             if (ModelState.IsValid)
             {
-                var availableSpotId = await _spotRepository.FindAvailableSpotId();
-                if (availableSpotId == 0) // No available spot was found if this is true
+                int availableSpotId;
+                var vehicleType = await _context.VehicleTypes.FindAsync(vehicle.VehicleTypeId);
+
+                // Kontrollera om det är en motorcykel baserat på VehicleTypeId
+                bool isMotorcycle = vehicleType?.Name.Equals("Motorcycle", StringComparison.OrdinalIgnoreCase) ?? false;
+
+                if (isMotorcycle)
                 {
-                    ModelState.AddModelError("", "no spots available");
+                    availableSpotId = await FindAvailableSpotIdForMotorcycle();
+                }
+                else
+                {
+                    availableSpotId = await _spotRepository.FindAvailableSpotId();
+                }
+
+                if (availableSpotId == 0)
+                {
+                    ModelState.AddModelError("", "No spots available");
                     return View(vehicle);
                 }
 
@@ -168,14 +182,49 @@ namespace Garage_2._0.Controllers
                     _context.Add(newVehicle);
                     await _context.SaveChangesAsync();
 
+                    bool assignSuccess = await _spotRepository.AssignVehicleToSpot(availableSpotId, newVehicle.Id);
 
-                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
-                    return RedirectToAction(nameof(Index));
+                    if (assignSuccess)
+                    {
+                        string message = isMotorcycle
+                            ? $"Motorcycle (registration number {newVehicle.RegNr}) successfully parked! Up to 3 motorcycles can share this spot."
+                            : $"Vehicle (registration number {newVehicle.RegNr}) successfully parked!";
+
+                        await _feedbackRepository.SetMessage(new FeedbackMessage(message, AlertType.success));
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        // Om tilldelning misslyckas, ta bort fordonet
+                        _context.Remove(newVehicle);
+                        await _context.SaveChangesAsync();
+                        ModelState.AddModelError("", "Could not assign parking spot");
+                    }
                 }
                 else
                     ModelState.AddModelError("regNr", "Registration number must be unique");
             }
             return View(vehicle);
+
+            // Lokal hjälpmetod för att hitta motorcykelplats
+            async Task<int> FindAvailableSpotIdForMotorcycle()
+            {
+                // Först, sök efter en delad motorcykelplats
+                var sharedMotorcycleSpotId = await _context.Spots
+                    .Include(s => s.Vehicles)
+                    .Where(s =>
+                        s.Vehicles != null &&
+                        s.Vehicles.Count == vehicle.VehicleTypeId &&
+                        _context.Vehicle.Count(v => v.Spots.Count == s.Id) < 3)
+                    .Select(s => s.Id)
+                    .FirstOrDefaultAsync();
+
+                if (sharedMotorcycleSpotId != 0)
+                    return sharedMotorcycleSpotId;
+
+                // Om ingen delad plats hittas, använd en tom plats
+                return await _spotRepository.FindAvailableSpotId();
+            }
         }
 
         /// <summary>

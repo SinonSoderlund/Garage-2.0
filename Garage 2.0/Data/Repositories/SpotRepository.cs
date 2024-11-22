@@ -29,6 +29,10 @@ public class SpotRepository : ISpotRepository
 
     public async Task<bool> AssignVehicleToSpot(int spotId, int vehicleId)
     {
+        var vehicle = await _context.Vehicle
+            .Include(v => v.VehicleType)
+            .FirstOrDefaultAsync(v => v.Id == vehicleId);
+
         var spot = await _context.Spots.FindAsync(spotId); // gets a spot from Spots table with given id
         
         // Check if the spot exists and that it doesn't contain a VehicleId (which means a vehicle is parked here).
@@ -37,6 +41,22 @@ public class SpotRepository : ISpotRepository
             spot.VehicleId = vehicleId; // assign vehicle to the spot
             await _context.SaveChangesAsync(); // save changes to database
             return true;
+        }
+       
+        if (vehicle?.VehicleType?.Name.Equals("Motorcycle", StringComparison.OrdinalIgnoreCase) ?? false)
+        {
+            // Räkna befintliga motorcyklar på denna plats
+            var motorcycleCount = await _context.Vehicle
+                .CountAsync(v =>
+                    v.Spots.Count == spotId &&
+                    v.VehicleType.Name.Equals("Motorcycle", StringComparison.OrdinalIgnoreCase));
+
+            if (motorcycleCount < 3)
+            {
+                spot.VehicleId = vehicleId;
+                await _context.SaveChangesAsync();
+                return true;
+            }
         }
 
         return false;
