@@ -127,6 +127,60 @@ namespace Garage_2._0.Controllers
 
             return View(output);
         }
+        public async Task<IActionResult> GarageStatistics()
+        {
+            var statistics = new GarageStatisticsViewModel
+            {
+                TotalSpots = await _context.Spots.CountAsync(),
+                OccupiedSpots = await _context.Spots.CountAsync(s => s.VehicleId != null),
+                VehicleTypeStatistics = await GetVehicleTypeStatistics()
+            };
+
+            return View(statistics);
+        }
+
+        private async Task<List<VehicleTypeStatistic>> GetVehicleTypeStatistics()
+        {
+            return await _context.Vehicle
+                .Include(v => v.VehicleType)
+                .GroupBy(v => v.VehicleType.Name)
+                .Select(g => new VehicleTypeStatistic
+                {
+                    TypeName = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+        }
+
+        // Add this method for managing vehicle types
+        public async Task<IActionResult> ManageVehicleTypes()
+        {
+            var vehicleTypes = await _context.VehicleTypes.ToListAsync();
+            return View(vehicleTypes);
+        }
+
+        // GET: Vehicles/AddVehicleType
+        public IActionResult AddVehicleType()
+        {
+            return View();
+        }
+
+        // POST: Vehicles/AddVehicleType
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddVehicleType([Bind("Name,SpotSize")] VehicleType vehicleType)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(vehicleType);
+                await _context.SaveChangesAsync();
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"Vehicle type {vehicleType.Name} successfully added!", AlertType.success));
+                return RedirectToAction(nameof(ManageVehicleTypes));
+            }
+            return View(vehicleType);
+        }
+
 
         // GET: Vehicles/ParkVehicle
         public async Task<IActionResult> ParkVehicle()
@@ -147,7 +201,7 @@ namespace Garage_2._0.Controllers
             return View();
         }
 
-        // POST: Vehicles/ParkVehicle
+        // Modify your existing ParkVehicle POST method to include additional validation
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
@@ -161,10 +215,21 @@ namespace Garage_2._0.Controllers
 
             if (ModelState.IsValid)
             {
-                var availableSpotId = await _spotRepository.FindAvailableSpotId();
-                if (availableSpotId == 0) // No available spot was found if this is true
+                // Check if the vehicle is already registered to this user
+                var existingVehicle = await _context.Vehicle
+                    .FirstOrDefaultAsync(v => v.RegNr == vehicle.RegNr && v.UserId == user.Id);
+
+                if (existingVehicle != null)
                 {
-                    ModelState.AddModelError("", "No spots available");
+                    ModelState.AddModelError("", "This vehicle is already registered to you.");
+                    return View(vehicle);
+                }
+
+                // Find available spot
+                var availableSpotId = await _spotRepository.FindAvailableSpotId();
+                if (availableSpotId == 0)
+                {
+                    ModelState.AddModelError("", "No parking spots available");
                     return View(vehicle);
                 }
 
@@ -173,11 +238,11 @@ namespace Garage_2._0.Controllers
                     // Create vehicle and associate with logged-in user
                     Vehicle newVehicle = new Vehicle(vehicle)
                     {
-                        UserId = user.Id,  // Associate vehicle with user
+                        UserId = user.Id,
                         User = user
                     };
-                    _context.Add(newVehicle);
-                    // Set the VehicleType based on the selected type
+
+                    // Set the VehicleType
                     var vehicleType = await _context.VehicleTypes
                         .FirstOrDefaultAsync(vt => vt.Id == vehicle.VehicleTypeId);
 
@@ -196,7 +261,8 @@ namespace Garage_2._0.Controllers
                     // Assign vehicle to spot
                     await _spotRepository.AssignVehicleToSpot(availableSpotId, newVehicle.Id);
 
-                    await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
+                    await _feedbackRepository.SetMessage(
+                        new FeedbackMessage($"Vehicle (registration number {newVehicle.RegNr}) successfully parked!", AlertType.success));
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -215,6 +281,7 @@ namespace Garage_2._0.Controllers
 
             return View(vehicle);
         }
+
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
@@ -325,10 +392,26 @@ namespace Garage_2._0.Controllers
             var vehicle = await _context.Vehicle.FindAsync(id);
             if (vehicle != null)
             {
+                var spot = await _context.Spots
+               .Include(s => s.Vehicles)
+               .FirstOrDefaultAsync(s => s.VehicleId == id);
+
+                if (spot != null)
+                {
+                    // Clear the VehicleId from the spot
+                    spot.VehicleId = null;
+
+                    // Remove the vehicle from the Vehicles collection
+                    if (spot.Vehicles != null)
+                    {
+                        spot.Vehicles.Remove(vehicle);
+                    }
+
+                    _context.Spots.Update(spot);
+                }
                 _context.Vehicle.Remove(vehicle);
                 await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
             }
-
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -341,6 +424,24 @@ namespace Garage_2._0.Controllers
             var vehicle = await _context.Vehicle.FindAsync(id);
             if (vehicle != null)
             {
+                // Find the spot containing this vehicle
+                var spot = await _context.Spots
+                    .Include(s => s.Vehicles)
+                    .FirstOrDefaultAsync(s => s.VehicleId == id);
+
+                if (spot != null)
+                {
+                    // Clear the VehicleId from the spot
+                    spot.VehicleId = null;
+
+                    // Remove the vehicle from the Vehicles collection
+                    if (spot.Vehicles != null)
+                    {
+                        spot.Vehicles.Remove(vehicle);
+                    }
+
+                    _context.Spots.Update(spot);
+                }
                 _context.Vehicle.Remove(vehicle);
                 await _context.SaveChangesAsync();
                 ReceiptViewModel output = new ReceiptViewModel(vehicle, _price);

@@ -16,6 +16,11 @@ namespace Garage_2._0.Models.ViewModels
         [DisplayName("Total price for parking")]
 
         public string ParkingTotalPriceText { get; set; }
+        public int TotalSpots { get; set; }
+        public int OccupiedSpots { get; set; }
+        public int AvailableSpots => TotalSpots - OccupiedSpots;
+        public decimal OccupancyRate => TotalSpots == 0 ? 0 : (decimal)OccupiedSpots / TotalSpots * 100;
+        public List<VehicleTypeStatistic> VehicleTypeStatistics { get; set; }
 
         public GarageStatisticsViewModel(List<string> vehiclesByType, uint wheelTotal, decimal parkingTotalPrice)
         {
