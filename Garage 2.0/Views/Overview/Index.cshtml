@@ -1,0 +1,40 @@
+﻿<form method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text"
+               name="searchTerm"
+               class="form-control"
+               placeholder="Search by name"
+               aria-label="Search by name" />
+        <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+</form>
+
+<table class="table">
+    <thead class="table">
+        <tr>
+            <th>Name</th>
+            <th>Vehicle Count</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.FirstName @user.LastName</td>
+                <td>@user.VehicleCount</td>
+                <td>
+                    @if (user.VehicleCount > 0)
+                    {
+                        <a href="@Url.Action("Details", "Overview", new { userId = user.UserId })"
+                           class="btn btn-link">View Vehicles</a>
+                    }
+                    else
+                    {
+                        <span class="btn btn-link disabled" tabindex="-1" aria-disabled="true">View Vehicles</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

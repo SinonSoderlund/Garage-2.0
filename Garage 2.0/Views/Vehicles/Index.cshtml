@@ -89,7 +89,9 @@
 @if (Model.UIVCModelState != UIVC_State.empty)
 {
     <partial name="_VehicleListPartial" model="@Model.IndexViews"/>
-    <partial name="_StatisticsPartial" />
+    @if(User.IsInRole("Admin")){
+        <partial name="_StatisticsPartial" />
+    }
 }
 else
 {

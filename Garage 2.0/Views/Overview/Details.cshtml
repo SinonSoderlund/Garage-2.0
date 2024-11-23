@@ -1,0 +1,31 @@
+﻿@model IEnumerable<UserVehicleViewModel>
+
+<h2>Vehicles for @ViewBag.UserName</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Registration Number</th>
+            <th>Model</th>
+            <th>Brand</th>
+            <th>Color</th>
+            <th>Vehicle Type</th>
+            <th>Arrival Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var vehicle in Model)
+        {
+            <tr>
+                <td>@vehicle.RegNr</td>
+                <td>@vehicle.Model</td>
+                <td>@vehicle.Brand</td>
+                <td>@vehicle.Color</td>
+                <td>@vehicle.VehicleType</td>
+                <td>@vehicle.ArriveTime</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a href="@Url.Action("Index", "Overview")" class="btn btn-link">Back to Users</a>

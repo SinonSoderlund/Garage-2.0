@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Enums\VehicleType.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Enums\NewFile.txt" />
     <None Remove="Enums\VehicleType.vs" />
   </ItemGroup>

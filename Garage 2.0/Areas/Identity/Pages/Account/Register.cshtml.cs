@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Garage_2._0.Data.Repositories;
+using System.Security.Claims;
 
 namespace Garage_2._0.Areas.Identity.Pages.Account
 {
@@ -122,6 +123,7 @@ namespace Garage_2._0.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
+
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
@@ -170,6 +172,10 @@ namespace Garage_2._0.Areas.Identity.Pages.Account
                     _logger.LogInformation("User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);
+
+                    var fullNameClaim = new Claim("FullName", $"{Input.FirstName} {Input.LastName}");
+                    await _userManager.AddClaimAsync(user, fullNameClaim);
+
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
