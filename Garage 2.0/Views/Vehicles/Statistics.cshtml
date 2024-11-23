@@ -1,0 +1,266 @@
+﻿@model GarageStatisticsViewModel
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4 text-primary fw-bold">Garage Dashboard</h1>
+            <p class="lead text-muted">Real-time parking statistics and analytics</p>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row g-4 mb-4">
+        @{
+            var metrics = new[]
+            {
+        new { Title = "Total Spots", Value = Model.TotalSpots.ToString(), Description = "Total parking capacity", Color = "primary", Icon = "bi-p-square-fill" },
+        new { Title = "Available Spots", Value = Model.AvailableSpots.ToString(), Description = "Current free spaces", Color = "success", Icon = "bi-check-square-fill" },
+        new { Title = "Occupied Spots", Value = Model.OccupiedSpots.ToString(), Description = "Currently parked vehicles", Color = "info", Icon = "bi-car-front-fill" },
+        new { Title = "Occupancy Rate", Value = $"{Model.OccupancyRate:F1}%", Description = "Current utilization", Color = "warning", Icon = "bi-graph-up" }
+        };
+        }
+        @foreach (var metric in metrics)
+        {
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 bg-@metric.Color bg-opacity-10 hover-lift">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi @metric.Icon fs-1 text-@metric.Color"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="card-title mb-0">@metric.Title</h5>
+                            </div>
+                        </div>
+                        <h2 class="display-5 fw-bold mb-0 text-@metric.Color">@metric.Value</h2>
+                        <p class="card-text text-muted mt-2">@metric.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="row g-4">
+        <!-- Vehicle Types -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0">Vehicles by Type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Vehicle Type</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var type in Model.VehiclesByType)
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-circle-fill me-2 text-@@GetColorForVehicleType(type.TypeName)"></i>
+                                            @type.TypeName
+                                        </td>
+                                        <td class="text-end">@type.Count</td>
+                                        <td class="text-end">@((type.Count / (float)Model.TotalSpots * 100).ToString("F1"))%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Statistics -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0">Additional Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-gear-fill me-2 text-primary"></i> Total Wheels</span>
+                            <span class="badge bg-primary rounded-pill">@Model.WheelTotal</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-cash-coin me-2 text-success"></i> Total Parking Revenue</span>
+                            <span class="badge bg-success rounded-pill">@Model.ParkingTotalPriceFormatted</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-clock-fill me-2 text-info"></i> Average Parking Duration</span>
+                            <span class="badge bg-info rounded-pill">@Model.AverageParkedTimeFormatted</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm hover-lift">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Occupancy Visualization</h5>
+                    <div class="btn-group" role="group" aria-label="Chart Type">
+                        <button type="button" class="btn btn-outline-primary active" id="barChartBtn">Bar</button>
+                        <button type="button" class="btn btn-outline-primary" id="pieChartBtn">Pie</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="occupancyChart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var options = {
+                series: [@Model.AvailableSpots, @Model.OccupiedSpots],
+                labels: ['Available', 'Occupied'],
+                colors: ['#28a745', '#dc3545'],
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 150
+                        },
+                        dynamicAnimation: {
+                            enabled: true,
+                            speed: 350
+                        }
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        dataLabels: {
+                            position: 'top',
+                        },
+                    },
+                    pie: {
+                        donut: {
+                            size: '50%'
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val, opts) {
+                        if (opts.w.config.chart.type === 'pie') {
+                            return opts.w.config.labels[opts.seriesIndex] + ": " + val.toFixed(1) + "%";
+                        }
+                        return val + " spots";
+                    },
+                    style: {
+                        fontSize: '12px',
+                        colors: ["#304758"]
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    y: {
+                        formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+                            if (w.config.chart.type === 'pie') {
+                                return value.toFixed(1) + "%";
+                            }
+                            return value + " spots (" + (value / @Model.TotalSpots * 100).toFixed(1) + "%)";
+                        }
+                    }
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#occupancyChart"), options);
+            chart.render();
+
+            // Toggle between bar and pie chart
+            document.getElementById('barChartBtn').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('pieChartBtn').classList.remove('active');
+                chart.updateOptions({
+                    chart: {
+                        type: 'bar'
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: true,
+                            dataLabels: {
+                                position: 'top',
+                            },
+                        }
+                    },
+                    dataLabels: {
+                        formatter: function (val) {
+                            return val + " spots";
+                        },
+                        style: {
+                            colors: ["#304758"]
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('pieChartBtn').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('barChartBtn').classList.remove('active');
+                chart.updateOptions({
+                    chart: {
+                        type: 'pie'
+                    },
+                    plotOptions: {
+                        pie: {
+                            dataLabels: {
+                                offset: -5
+                            }
+                        }
+                    },
+                    dataLabels: {
+                        formatter: function(val, opts) {
+                            return opts.w.config.labels[opts.seriesIndex] + ": " + val.toFixed(1) + "%";
+                        }
+                    }
+                });
+            });
+        });
+
+        // Helper function to get color for vehicle type (you may want to adjust this based on your needs)
+        function GetColorForVehicleType(typeName) {
+            const colorMap = {
+                'Car': 'primary',
+                'Motorcycle': 'success',
+                'Truck': 'danger',
+                'Van': 'warning',
+                'Bus': 'info'
+            };
+            return colorMap[typeName] || 'secondary';
+        }
+    </script>
+}

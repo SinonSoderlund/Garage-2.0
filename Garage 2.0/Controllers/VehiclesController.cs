@@ -210,6 +210,71 @@ namespace Garage_2._0.Controllers
             return View(vehicle);
         }
 
+        // GET: Vehicles/Statistics
+        [Authorize]
+        public async Task<IActionResult> Statistics(string? type = null)
+        {
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
+
+            // Base query including necessary relationships
+            var query = _context.Vehicle
+                .Include(v => v.VehicleType)
+                .Include(v => v.User)
+                .AsQueryable();
+
+            // Apply user-specific filtering unless admin
+            if (!isAdmin)
+            {
+                query = query.Where(v => v.UserId == userId);
+            }
+
+            // Apply type filtering if specified
+            if (!string.IsNullOrEmpty(type))
+            {
+                query = query.Where(v => v.VehicleType.Name == type);
+            }
+
+            var vehicles = await query.ToListAsync();
+
+            if (!vehicles.Any())
+            {
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage("No vehicles found for the specified criteria.", AlertType.info));
+                return RedirectToAction(nameof(Index));
+            }
+
+            var statistics = new GarageStatisticsViewModel
+            {
+                WheelTotal = (uint)vehicles.Sum(v => v.Wheels),
+                ParkingTotalPrice = vehicles.Sum(v => CalculateParkingPrice(v.ArriveTime)),
+                VehiclesByType = await _context.Vehicle
+                    .Include(v => v.VehicleType)
+                    .GroupBy(v => v.VehicleType.Name)  // Group by the Name property instead of the whole object
+                    .Select(g => new VehicleTypeCount
+                    {
+                        TypeName = g.Key,
+                        Count = g.Count()
+                    })
+                    .ToListAsync(),
+                TotalSpots = await _context.Spots.CountAsync(),
+                OccupiedSpots = await _context.Spots.CountAsync(s => s.VehicleId != null),
+                AverageParkedTime = TimeSpan.FromTicks(
+                    (long)vehicles.Average(v => DateTime.Now.Ticks - v.ArriveTime.Ticks))
+            };
+
+            statistics.AvailableSpots = statistics.TotalSpots - statistics.OccupiedSpots;
+            statistics.OccupancyRate = (decimal)((double)statistics.OccupiedSpots / statistics.TotalSpots * 100);
+
+            return View(statistics);
+        }
+
+        private decimal CalculateParkingPrice(DateTime arriveTime)
+        {
+            var duration = DateTime.Now - arriveTime;
+            var hours = Math.Ceiling(duration.TotalHours);
+            return (decimal)hours * _price;
+        }
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start

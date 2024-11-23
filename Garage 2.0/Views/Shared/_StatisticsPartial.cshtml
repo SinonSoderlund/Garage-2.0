@@ -17,11 +17,11 @@
                 <tr>
                     <th>Vehicle Type: Vehicle quantity</th>
                 </tr>
-                @foreach (string s in Model.GarageStatistics.VehiclesByType)
+                @foreach (var vehicleType in Model.GarageStatistics.VehiclesByType)
                 {
                     <tr>
                         <td>
-                            @s
+                            @vehicleType.TypeName: @vehicleType.Count
                         </td>
                     </tr>
                 }
@@ -30,24 +30,22 @@
             {
                 <tr>
                     <th>
-
-                        Vehicles in selection: @((Model.GarageStatistics.VehiclesByType[0])[Model.GarageStatistics.VehiclesByType[0].Length - 1])
+                        Vehicles in selection: @Model.GarageStatistics.VehiclesByType.First().Count
                     </th>
                 </tr>
             }
-                <tr>
-                    <th>
-                        Number of wheels total:
-                        @Model.GarageStatistics.WheelTotal;
-                    </th>
-                </tr>
-            
             <tr>
                 <th>
-                    Total Price of parking: @Model.GarageStatistics.ParkingTotalPriceText;
+                    Number of wheels total:
+                    @Model.GarageStatistics.WheelTotal
                 </th>
             </tr>
 
+            <tr>
+                <th>
+                    Total Price of parking: @Model.GarageStatistics.ParkingTotalPriceText
+                </th>
+            </tr>
         </table>
     }
 }
