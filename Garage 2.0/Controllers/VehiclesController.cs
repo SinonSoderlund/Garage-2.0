@@ -320,6 +320,76 @@ namespace Garage_2._0.Controllers
             return View(viewModel);
         }
 
+        // GET: Vehicles/Statistics
+        [Authorize]
+        public async Task<IActionResult> Statistics(string? type = null)
+        {
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
+
+            // Base query for vehicles
+            var query = _context.Vehicle
+                .Include(v => v.VehicleType)
+                .Include(v => v.User)
+                .AsQueryable();
+
+            // Filter by user unless admin
+            if (!isAdmin)
+            {
+                query = query.Where(v => v.UserId == userId);
+            }
+
+            // Filter by vehicle type if provided
+            if (!string.IsNullOrEmpty(type))
+            {
+                query = query.Where(v => v.VehicleType.Name == type);
+            }
+
+            var vehicles = await query.ToListAsync();
+
+            if (!vehicles.Any())
+            {
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage("No vehicles found for the specified criteria.", AlertType.info));
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Fetch spot data via SpotRepository
+            var totalSpots = (await _spotRepository.GetAllSpots()).Count();
+            var occupiedSpots = (await _spotRepository.GetAllSpots())
+                .Count(s => s.SpotAllocations.Sum(sa => sa.Fraction) > 0);
+
+            // Prepare statistics
+            var statistics = new GarageStatisticsViewModel
+            {
+                WheelTotal = (uint)vehicles.Sum(v => v.Wheels),
+                ParkingTotalPrice = vehicles.Sum(v => CalculateParkingPrice(v.ArriveTime)),
+                VehiclesByType = vehicles
+                    .GroupBy(v => v.VehicleType.Name)
+                    .Select(g => new VehicleTypeCount
+                    {
+                        TypeName = g.Key,
+                        Count = g.Count()
+                    })
+                    .ToList(),
+                TotalSpots = totalSpots,
+                OccupiedSpots = occupiedSpots,
+                AverageParkedTime = TimeSpan.FromTicks(
+                    (long)vehicles.Average(v => DateTime.Now.Ticks - v.ArriveTime.Ticks))
+            };
+
+            statistics.AvailableSpots = statistics.TotalSpots - statistics.OccupiedSpots;
+            statistics.OccupancyRate = (decimal)((double)statistics.OccupiedSpots / statistics.TotalSpots * 100);
+
+            return View(statistics);
+        }
+
+        private decimal CalculateParkingPrice(DateTime arriveTime)
+        {
+            var duration = DateTime.Now - arriveTime;
+            var hours = Math.Ceiling(duration.TotalHours);
+            return (decimal)hours * _price;
+        }
         private async Task<bool> VehicleExistsAsync(int id)
         {
             throw new NotImplementedException();
