@@ -1,9 +1,20 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model DetailViewModel
+
 @{
+    bool isEdit = ViewData["IsEdit"] != null && (bool)ViewData["IsEdit"];
 }
-@model DetailViewModel
+
+@if (!isEdit)
+{
+    <div class="form-group">
+        <label asp-for="VehicleTypeId" class="control-label"></label>
+        <select asp-for="VehicleTypeId" class="form-control" asp-items="@(ViewBag.VehicleTypes as List<SelectListItem>)">
+            <option selected="selected" value="">Please select</option>
+        </select>
+        <span asp-validation-for="VehicleTypeId" class="text-danger"></span>
+    </div>
+}
+
 
 @{
     bool isEdit = ViewData["IsEdit"] != null && (bool)ViewData["IsEdit"];
@@ -23,27 +34,33 @@
 
 <div class="form-group">
     <label asp-for="RegNr" class="control-label"></label>
-    <input asp-for="RegNr" class="form-control" required />
+
+    <input asp-for="RegNr" class="form-control" required/>
     <span asp-validation-for="RegNr" class="text-danger">
     </span>
 </div>
 <div class="form-group">
     <label asp-for="Brand" class="control-label"></label>
-    <input asp-for="Brand" class="form-control" required />
+    <input asp-for="Brand" class="form-control" required/>
     <span asp-validation-for="Brand" class="text-danger"></span>
 </div>
 <div class="form-group">
     <label asp-for="Model" class="control-label"></label>
-    <input asp-for="Model" class="form-control" required />
+
+    <input asp-for="Model" class="form-control" required/>
+
     <span asp-validation-for="Model" class="text-danger"></span>
 </div>
 <div class="form-group">
     <label asp-for="Wheels" class="control-label"></label>
-    <input asp-for="Wheels" class="form-control" required />
+
+    <input asp-for="Wheels" class="form-control" required/>
+
     <span asp-validation-for="Wheels" class="text-danger"></span>
 </div>
 <div class="form-group">
     <label asp-for="Color" class="control-label"></label>
-    <input asp-for="Color" class="form-control" required />
+
+    <input asp-for="Color" class="form-control" required/>
     <span asp-validation-for="Color" class="text-danger"></span>
 </div>
