@@ -11,73 +11,29 @@ public class SpotRepository : ISpotRepository
     {
         _context = context;
     }
+    
+    public async Task<int> FindSpotForVehicle(decimal vehicleSize)
+    {
+        var bestSpot = await _context.Spots
+            // only gets spots where the new vehicleSize + allocated space doesn't exceed 1.0
+            .Where(s => s.SpotAllocations.Sum(sa => sa.Fraction) + vehicleSize <= 1.0m)
+            .Select(s => new
+            {
+                SpotId = s.Id,
+                TotalAllocation = s.SpotAllocations.Sum(sa => sa.Fraction)
+            })
+            // sort the previous select statement, so that the best spot (closest to 1.0) gets on top.
+            .OrderByDescending(s => s.TotalAllocation)
+            .ThenBy(s => s.SpotId) // if it's a tie then the slot with lower id nr gets picked
+            .FirstOrDefaultAsync();
 
-    public async Task<IEnumerable<Spot>> GetAvailableSpots()
+        return bestSpot?.SpotId?? 0; // return 0 if no suitable spot is found.
+    }
+    
+    public async Task<IEnumerable<Spot>> GetAllSpots()
     {
         return await _context.Spots
-          .Include(s => s.Vehicles)//make sure we include vehicles collection
-          .Where(s => s.VehicleId == null)
-          .ToListAsync();
-    }
-
-    public async Task<int> FindAvailableSpotId()
-    {
-        // First ensure we have spots
-        if (!await _context.Spots.AnyAsync())
-        {
-            await InitializeSpots();
-        }
-
-        // Find first spot without a vehicle assigned
-        var availableSpot = await _context.Spots
-            .Include(s => s.Vehicles)
-            .FirstOrDefaultAsync(s => s.VehicleId == null);
-
-        return availableSpot?.Id ?? 0;
-    } 
-
-    public async Task<bool> AssignVehicleToSpot(int spotId, int vehicleId)
-    {
-        // Include Vehicles collection when fetching the spot
-        var spot = await _context.Spots
-            .Include(s => s.Vehicles)
-            .FirstOrDefaultAsync(s => s.Id == spotId);
-
-        // Check if the spot exists and that it doesn't contain a VehicleId (which means a vehicle is parked here).
-        if (spot != null && spot.VehicleId == null) 
-        {
-            spot.VehicleId = vehicleId; // assign vehicle to the spot
-
-            var vehicle = await _context.Vehicle.FindAsync(vehicleId);
-            if (vehicle != null)
-            {
-                if (spot.Vehicles == null)
-                {
-                    spot.Vehicles = new List<Vehicle>();
-                }
-                spot.Vehicles.Add(vehicle);
-            }
-            await _context.SaveChangesAsync(); // save changes to database
-            return true;
-        }
-
-        return false;
-    }
-    private async Task InitializeSpots()
-    {
-        if (!await _context.Spots.AnyAsync())
-        {
-            // Create initial spots (e.g., 8 spots)
-            var spots = Enumerable.Range(1, 8)
-                .Select(i => new Spot
-                {
-                    VehicleId = null,
-                    Vehicles = new List<Vehicle>()
-                })
-                .ToList();
-
-            _context.Spots.AddRange(spots);
-            await _context.SaveChangesAsync();
-        }
+            .Include(s => s.SpotAllocations)
+            .ToListAsync();
     }
 }

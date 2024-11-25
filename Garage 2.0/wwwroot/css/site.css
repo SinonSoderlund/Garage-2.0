@@ -38,3 +38,61 @@ body {
 button a {
     text-decoration: none;
 }
+
+/* Outer container for all slots */
+.parking-slot-ctr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Each parking slot */
+.parking-slot {
+    width: 50px;
+    height: 90px; 
+    border: 1px solid #333;
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse; /* Bars grow upwards */
+    background-color: #f8f8f8;
+}
+
+/* Bar container inside the slot */
+.parking-slot-bar-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse; /* Bars grow upwards */
+}
+
+/* Each bar for the allocation */
+.parking-slot-bar {
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+    cursor: pointer;
+    border: 1px solid #ccc; 
+
+}
+
+.tooltip {
+    display: none; /* Hidden by default */
+    position: absolute;
+    bottom: 110%; /* Adjust to position the tooltip above the bar */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8); /* Dark background for tooltip */
+    color: #fff; /* White text */
+    padding: 5px;
+    font-size: 12px;    
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 10; /* Ensure tooltip appears on top */
+    opacity: 100%;
+}
+
+.parking-slot-bar:hover .tooltip {
+    display: block; /* Make the tooltip visible on hover */
+}
+
