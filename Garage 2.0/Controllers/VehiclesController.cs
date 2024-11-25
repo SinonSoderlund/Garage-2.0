@@ -109,27 +109,6 @@ namespace Garage_2._0.Controllers
         }
         // End: Filter by Vehicle type
 
-        // GET: Vehicles/ParkVehicle
-        public async Task<IActionResult> ParkVehicle()
-        {
-            // Ensure user is logged in
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account"); // Redirect to login page if not logged in
-            }
-
-            var vehicle = await _context.Vehicle
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (vehicle == null)
-            {
-                return NotFound();
-            }
-
-            DetailViewModel output = new DetailViewModel(vehicle);
-
-            return View(output);
-        }
 
         // GET: Vehicles/ParkVehicle
         public async Task<IActionResult> ParkVehicle()
@@ -148,12 +127,13 @@ namespace Garage_2._0.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
         {
-            // Ensure user is logged in
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            var userId = _userManager.GetUserId(User);
+            var vehicleTypes = await _context.VehicleTypes.ToListAsync();
+            ViewBag.VehicleTypes = vehicleTypes.Select(v => new SelectListItem
             {
-                return RedirectToAction("Login", "Account");
-            }
+                Value = v.Id.ToString(), // vehicleId as value
+                Text = v.Name // name as display text
+            }).ToList();
 
             if (ModelState.IsValid)
             {
@@ -203,13 +183,12 @@ namespace Garage_2._0.Controllers
 
                 await _feedbackRepository.SetMessage(new FeedbackMessage(
                     $"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
-                return View(vehicle);
+                return RedirectToAction(nameof(Index));
             }
 
             // If we got here, something went wrong and ModelState is invalid
             return View(vehicle);
         }
-
 
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
@@ -371,24 +350,6 @@ namespace Garage_2._0.Controllers
             var vehicle = await _context.Vehicle.FindAsync(id);
             if (vehicle != null)
             {
-                // Find the spot containing this vehicle
-                var spot = await _context.Spots
-                    .Include(s => s.Vehicles)
-                    .FirstOrDefaultAsync(s => s.VehicleId == id);
-
-                if (spot != null)
-                {
-                    // Clear the VehicleId from the spot
-                    spot.VehicleId = null;
-
-                    // Remove the vehicle from the Vehicles collection
-                    if (spot.Vehicles != null)
-                    {
-                        spot.Vehicles.Remove(vehicle);
-                    }
-
-                    _context.Spots.Update(spot);
-                }
                 _context.Vehicle.Remove(vehicle);
                 await _context.SaveChangesAsync();
                 ReceiptViewModel output = new ReceiptViewModel(vehicle, _price);
