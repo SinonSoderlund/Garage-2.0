@@ -3,7 +3,6 @@
 public class Spot
 {
     public int Id { get; set; }
-    public int? VehicleId { get; set; } // nullable, null represents empty spot.
-    public ICollection<Vehicle> Vehicles { get; set; } // navigation property.
 
+    public ICollection<SpotAllocation> SpotAllocations { get; set; } // Navigation property for flexibility
 }

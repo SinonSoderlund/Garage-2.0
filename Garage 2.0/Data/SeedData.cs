@@ -15,6 +15,7 @@ namespace Garage_2._0
         {
             context = _context;
 
+            await AddVehicleTypesAsync();
             if (context.Roles.Any()) return;
 
             roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
@@ -25,10 +26,27 @@ namespace Garage_2._0
 
             await AddRolesAsync(roleNames);
 
+
             var admin = await AddAccountAsync(adminEmail, "Admin", "Adminsson", "Abc123!");
 
             await AddUserToRoleAsync(admin, "Admin");
 
+        }
+
+        private static async Task AddVehicleTypesAsync()
+        {
+            if (context.VehicleTypes.Any()) return;
+            
+            var elScooterType = new VehicleType() { Name = "ElectricScooter", SpotSize = 0.1m};
+            var bicyleType = new VehicleType() { Name = "Bicyle", SpotSize = 0.2m};
+            var mcType = new VehicleType() { Name = "MotorCycle", SpotSize = 0.3m};
+            var carType = new VehicleType() { Name = "Car", SpotSize = 1.0m};
+            
+            context.VehicleTypes.Add(elScooterType);
+            context.VehicleTypes.Add(bicyleType);
+            context.VehicleTypes.Add(mcType);
+            context.VehicleTypes.Add(carType);
+            context.SaveChanges();
         }
 
         private static async Task AddUserToRoleAsync(User user, string role)

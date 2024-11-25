@@ -11,35 +11,29 @@ public class SpotRepository : ISpotRepository
     {
         _context = context;
     }
-
-    public async Task<IEnumerable<Spot>> GetAvailableSpots()
+    
+    public async Task<int> FindSpotForVehicle(decimal vehicleSize)
     {
-        return await _context.Spots.Where(s => s.VehicleId == null).ToListAsync();
+        var bestSpot = await _context.Spots
+            // only gets spots where the new vehicleSize + allocated space doesn't exceed 1.0
+            .Where(s => s.SpotAllocations.Sum(sa => sa.Fraction) + vehicleSize <= 1.0m)
+            .Select(s => new
+            {
+                SpotId = s.Id,
+                TotalAllocation = s.SpotAllocations.Sum(sa => sa.Fraction)
+            })
+            // sort the previous select statement, so that the best spot (closest to 1.0) gets on top.
+            .OrderByDescending(s => s.TotalAllocation)
+            .ThenBy(s => s.SpotId) // if it's a tie then the slot with lower id nr gets picked
+            .FirstOrDefaultAsync();
+
+        return bestSpot?.SpotId?? 0; // return 0 if no suitable spot is found.
     }
     
-    public async Task<int> FindAvailableSpotId()
+    public async Task<IEnumerable<Spot>> GetAllSpots()
     {
-        var availableSpotId = await _context.Spots
-            .Where(s => s.VehicleId == null) // See if spot is available
-            .Select(s => s.Id)
-            .FirstOrDefaultAsync(); // returns first found empty spot in database where value is null, 0 if no spot is found
-        
-        return availableSpotId;
+        return await _context.Spots
+            .Include(s => s.SpotAllocations)
+            .ToListAsync();
     }
-
-    public async Task<bool> AssignVehicleToSpot(int spotId, int vehicleId)
-    {
-        var spot = await _context.Spots.FindAsync(spotId); // gets a spot from Spots table with given id
-        
-        // Check if the spot exists and that it doesn't contain a VehicleId (which means a vehicle is parked here).
-        if (spot != null && spot.VehicleId == null) 
-        {
-            spot.VehicleId = vehicleId; // assign vehicle to the spot
-            await _context.SaveChangesAsync(); // save changes to database
-            return true;
-        }
-
-        return false;
-    }
-
 }

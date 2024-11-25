@@ -11,7 +11,7 @@
 <form asp-action="SearchByRegNumber" method="get" class="mb-3">
     <label for="search">Search by Registration number:</label>
     <div class="input-group mb-3">
-        <input type="text" name="searchField" class="form-control" placeholder="Enter registration number" />
+        <input type="text" name="searchField" class="form-control" placeholder="Enter registration number"/>
         <button class="btn btn-outline-secondary" type="submit">Search</button>
     </div>
 </form>
@@ -39,41 +39,72 @@
             <option value="@type.Name">@type.Name</option>
         }
     </select>
-    <br />
+    <br/>
     <button class="btn btn-primary" type="submit">Filter</button>
 </form>
 <!-- End: filter by vehicle type-->
 
-@if(Model.FeedbackBannerMessage != null)
+@if (Model.FeedbackBannerMessage != null)
 {
     <div class="alert alert-@Model.FeedbackBannerMessage.AlertType">
         @Model.FeedbackBannerMessage.Message
     </div>
 }
-
-
+@* 
 <h3>Available Spots: @Model.SpotViewModel.AvailableSpots</h3>
 @if (Model.SpotViewModel.AvailableSpots == 0)
 {
 <div class="alert alert-warning">
     The garage is full.
+</div> *@
+
+
+<div class="parking-slot-ctr">
+    @if (Model.SpotViewModel.SpotCollection != null)
+    {
+        @foreach (Spot s in Model.SpotViewModel.SpotCollection)
+        {
+            <div class="parking-slot">
+                <div class="parking-slot-bar-container">
+                    @if (s.SpotAllocations != null)
+                    {
+                        @foreach (SpotAllocation sa in s.SpotAllocations)
+                        {
+                            var height = sa?.Fraction * 100 ?? 0;
+                            var color = sa?.Vehicle?.Color ?? "gainsboro";
+                            var regNr = sa?.Vehicle?.RegNr ?? "N/A";
+
+                            <div class="parking-slot-bar" style="height: @(height.ToString("F0"))%; background-color: @(color);">
+                                <span class="tooltip">
+                                    Vehicle: @(regNr)<br/>
+                                    Allocation: @(height)%
+                                </span>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p>No spots available</p>
+    }
 </div>
+
 @* <button class="disabled"> *@
 @*     Park Vehicle *@
 @* </button> *@
-}
-else
-{
 <button class="btn btn-success">
     <a asp-action="ParkVehicle" class="text-white">Park Vehicle</a>
 </button>
-}
 
 @if (Model.UIVCModelState != UIVC_State.empty)
 {
     <partial name="_VehicleListPartial" model="@Model.IndexViews"/>
-    @if(User.IsInRole("Admin")){
-        <partial name="_StatisticsPartial" />
+    @if (User.IsInRole("Admin"))
+    {
+        <partial name="_StatisticsPartial"/>
     }
 }
 else
