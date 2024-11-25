@@ -40,20 +40,16 @@ namespace Garage_2._0.Controllers
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
-            var model = await _context.Vehicle
-                .Include(v => v.VehicleType)
-                .Include(v => v.User)
-                .ToListAsync();
-
+            var model = await _context.Vehicle.ToListAsync();
             ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             return View(new UnitedIndexViewCollection(model, _price, await _spotRepository.GetAllSpots(),
                 UIVC_State.full, await _feedbackRepository.GetMessage()));
         }
 
-
         // Start Feature: Search area
         public async Task<IActionResult> SearchByRegNumber(string searchField)
         {
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             if (!string.IsNullOrEmpty(searchField))
             {
                 var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField));
@@ -72,6 +68,7 @@ namespace Garage_2._0.Controllers
 
         public async Task<IActionResult> SortByDateAscending()
         {
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             var sortedVehicles = await _context.Vehicle
                 .OrderBy(v => v.ArriveTime)
                 .ToListAsync();
@@ -82,6 +79,7 @@ namespace Garage_2._0.Controllers
 
         public async Task<IActionResult> SortByDateDescending()
         {
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             var sortedVehicles = await _context.Vehicle
                 .OrderByDescending(v => v.ArriveTime)
                 .ToListAsync();
@@ -95,6 +93,7 @@ namespace Garage_2._0.Controllers
         // Start: Filter by Vehicle type
         public async Task<IActionResult> FilterByVehicleType(string vehicleType)
         {
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             if (!string.IsNullOrEmpty(vehicleType))
             {
                 var filteredVehicles = _context.Vehicle
@@ -109,20 +108,21 @@ namespace Garage_2._0.Controllers
         }
         // End: Filter by Vehicle type
 
-
         // GET: Vehicles/ParkVehicle
         public async Task<IActionResult> ParkVehicle()
         {
             var vehicleTypes = await _context.VehicleTypes.ToListAsync();
             ViewBag.VehicleTypes = vehicleTypes.Select(v => new SelectListItem
             {
-                Value = v.Id.ToString(),
-                Text = v.Name
+                Value = v.Id.ToString(), // vehicleId as value
+                Text = v.Name // name as display text
             }).ToList();
             return View();
         }
 
-        // Modify your existing ParkVehicle POST method to include additional validation
+        // POST: Vehicles/ParkVehicle
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ParkVehicle(DetailViewModel vehicle)
@@ -190,72 +190,6 @@ namespace Garage_2._0.Controllers
             return View(vehicle);
         }
 
-        // GET: Vehicles/Statistics
-        [Authorize]
-        public async Task<IActionResult> Statistics(string? type = null)
-        {
-            var userId = _userManager.GetUserId(User);
-            var isAdmin = User.IsInRole("Admin");
-
-            // Base query including necessary relationships
-            var query = _context.Vehicle
-                .Include(v => v.VehicleType)
-                .Include(v => v.User)
-                .AsQueryable();
-
-            // Apply user-specific filtering unless admin
-            if (!isAdmin)
-            {
-                query = query.Where(v => v.UserId == userId);
-            }
-
-            // Apply type filtering if specified
-            if (!string.IsNullOrEmpty(type))
-            {
-                query = query.Where(v => v.VehicleType.Name == type);
-            }
-
-            var vehicles = await query.ToListAsync();
-
-            if (!vehicles.Any())
-            {
-                await _feedbackRepository.SetMessage(
-                    new FeedbackMessage("No vehicles found for the specified criteria.", AlertType.info));
-                return RedirectToAction(nameof(Index));
-            }
-
-            var statistics = new GarageStatisticsViewModel
-            {
-                WheelTotal = (uint)vehicles.Sum(v => v.Wheels),
-                ParkingTotalPrice = vehicles.Sum(v => CalculateParkingPrice(v.ArriveTime)),
-                VehiclesByType = await _context.Vehicle
-                    .Include(v => v.VehicleType)
-                    .GroupBy(v => v.VehicleType.Name)  // Group by the Name property instead of the whole object
-                    .Select(g => new VehicleTypeCount
-                    {
-                        TypeName = g.Key,
-                        Count = g.Count()
-                    })
-                    .ToListAsync(),
-                TotalSpots = await _context.Spots.CountAsync(),
-                OccupiedSpots = await _context.Spots.CountAsync(s => s.VehicleId != null),
-                AverageParkedTime = TimeSpan.FromTicks(
-                    (long)vehicles.Average(v => DateTime.Now.Ticks - v.ArriveTime.Ticks))
-            };
-
-            statistics.AvailableSpots = statistics.TotalSpots - statistics.OccupiedSpots;
-            statistics.OccupancyRate = (decimal)((double)statistics.OccupiedSpots / statistics.TotalSpots * 100);
-
-            return View(statistics);
-        }
-
-        private decimal CalculateParkingPrice(DateTime arriveTime)
-        {
-            var duration = DateTime.Now - arriveTime;
-            var hours = Math.Ceiling(duration.TotalHours);
-            return (decimal)hours * _price;
-        }
-
         /// <summary>
         /// Function to ensure a vehicle to be added is unique, not ideal implementation since verification isnt enforced, but its a start
         /// </summary>
@@ -269,24 +203,53 @@ namespace Garage_2._0.Controllers
                 (v.RegNr == toVerify.RegNr) && (v.Id != toVerify.Id)) == default;
         }
 
-        // GET: Vehicles/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: Vehicles/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.",
+                    AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to View this vehicle.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
+            }
+
+            DetailViewModel output = new DetailViewModel(vehicle);
+            return View(output);
+        }
+
+        // GET: Vehicles/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.",
+                    AlertType.danger));
+                return RedirectToAction(nameof(Index));
+            }
+
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
+
+            var vehicle = await _context.Vehicle
+                .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
+
+            if (vehicle == null)
+            {
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -304,15 +267,16 @@ namespace Garage_2._0.Controllers
                 return NotFound();
             }
 
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -356,6 +320,76 @@ namespace Garage_2._0.Controllers
             return View(viewModel);
         }
 
+        // GET: Vehicles/Statistics
+        [Authorize]
+        public async Task<IActionResult> Statistics(string? type = null)
+        {
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
+
+            // Base query for vehicles
+            var query = _context.Vehicle
+                .Include(v => v.VehicleType)
+                .Include(v => v.User)
+                .AsQueryable();
+
+            // Filter by user unless admin
+            if (!isAdmin)
+            {
+                query = query.Where(v => v.UserId == userId);
+            }
+
+            // Filter by vehicle type if provided
+            if (!string.IsNullOrEmpty(type))
+            {
+                query = query.Where(v => v.VehicleType.Name == type);
+            }
+
+            var vehicles = await query.ToListAsync();
+
+            if (!vehicles.Any())
+            {
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage("No vehicles found for the specified criteria.", AlertType.info));
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Fetch spot data via SpotRepository
+            var totalSpots = (await _spotRepository.GetAllSpots()).Count();
+            var occupiedSpots = (await _spotRepository.GetAllSpots())
+                .Count(s => s.SpotAllocations.Sum(sa => sa.Fraction) > 0);
+
+            // Prepare statistics
+            var statistics = new GarageStatisticsViewModel
+            {
+                WheelTotal = (uint)vehicles.Sum(v => v.Wheels),
+                ParkingTotalPrice = vehicles.Sum(v => CalculateParkingPrice(v.ArriveTime)),
+                VehiclesByType = vehicles
+                    .GroupBy(v => v.VehicleType.Name)
+                    .Select(g => new VehicleTypeCount
+                    {
+                        TypeName = g.Key,
+                        Count = g.Count()
+                    })
+                    .ToList(),
+                TotalSpots = totalSpots,
+                OccupiedSpots = occupiedSpots,
+                AverageParkedTime = TimeSpan.FromTicks(
+                    (long)vehicles.Average(v => DateTime.Now.Ticks - v.ArriveTime.Ticks))
+            };
+
+            statistics.AvailableSpots = statistics.TotalSpots - statistics.OccupiedSpots;
+            statistics.OccupancyRate = (decimal)((double)statistics.OccupiedSpots / statistics.TotalSpots * 100);
+
+            return View(statistics);
+        }
+
+        private decimal CalculateParkingPrice(DateTime arriveTime)
+        {
+            var duration = DateTime.Now - arriveTime;
+            var hours = Math.Ceiling(duration.TotalHours);
+            return (decimal)hours * _price;
+        }
         private async Task<bool> VehicleExistsAsync(int id)
         {
             throw new NotImplementedException();
@@ -366,19 +400,21 @@ namespace Garage_2._0.Controllers
         {
             if (id == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.",
+                    AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -391,19 +427,22 @@ namespace Garage_2._0.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckOutConfirmed(int id)
         {
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                _context.Vehicle.Remove(vehicle);
                 await _feedbackRepository.SetMessage(
-                    new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
+                    new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
+                return RedirectToAction(nameof(Index));
             }
 
+            _context.Vehicle.Remove(vehicle);
+            await _feedbackRepository.SetMessage(
+                new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

@@ -11,29 +11,8 @@
         {
             <h3>Garage statistics:</h3>
         }
-        <table>
-            @if (Model.UIVCModelState != UIVC_State.filteredByType)
-            {
-                <tr>
-                    <th>Vehicle Type: Vehicle quantity</th>
-                </tr>
-                @foreach (var vehicleType in Model.GarageStatistics.VehiclesByType)
-                {
-                    <tr>
-                        <td>
-                            @vehicleType.TypeName: @vehicleType.Count
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <th>
-                        Vehicles in selection: @Model.GarageStatistics.VehiclesByType.First().Count
-                    </th>
-                </tr>
-            }
+        <table>         
+            
             <tr>
                 <th>
                     Number of wheels total:

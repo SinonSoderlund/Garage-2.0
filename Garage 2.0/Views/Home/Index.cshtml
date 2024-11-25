@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Garage 2.0 - Next-Gen Parking Management";
+    ViewData["Title"] = "Garage 3.0 - Next-Gen Parking Management";
 }
 
 <!-- Progress Bar -->
@@ -11,7 +11,7 @@
     <div class="container position-relative z-3 py-5">
         <div class="row min-vh-100 align-items-center">
             <div class="col-lg-6 fade-in">
-                <h1 class="display-1 fw-bold mb-4 gradient-text">Garage 2.0</h1>
+                <h1 class="display-1 fw-bold mb-4 gradient-text">Garage 3.0</h1>
                 <p class="lead fs-3 mb-5">Revolutionizing parking management with AI-powered solutions</p>
                 <div class="d-flex gap-3">
                     <a asp-controller="Vehicles" asp-action="Index"
@@ -61,11 +61,11 @@
             @{
                 var features = new[]
                 {
+            // new { Icon = "car-front-fill", Title = "Vehicle Management", Desc = "Comprehensive vehicle tracking and management system for seamless operations.", Color = "success", Percentage = "90" },
+            // new { Icon = "clipboard-check-fill", Title = "Easy Administration", Desc = "Intuitive management tools that simplify your daily parking operations.", Color = "info", Percentage = "95" },
+            // new { Icon = "shield-check", Title = "Enhanced Security", Desc = "Advanced security measures to protect vehicles and ensure peace of mind.", Color = "danger", Percentage = "92" },
             new { Icon = "p-circle-fill", Title = "Smart Parking", Desc = "AI-powered allocation system that optimizes space utilization and enhances parking efficiency.", Color = "primary", Percentage = "85" },
-            new { Icon = "car-front-fill", Title = "Vehicle Management", Desc = "Comprehensive vehicle tracking and management system for seamless operations.", Color = "success", Percentage = "90" },
-            new { Icon = "clipboard-check-fill", Title = "Easy Administration", Desc = "Intuitive management tools that simplify your daily parking operations.", Color = "info", Percentage = "95" },
             new { Icon = "graph-up", Title = "Analytics Dashboard", Desc = "Real-time insights and data visualization for informed decision-making.", Color = "warning", Percentage = "80" },
-            new { Icon = "shield-check", Title = "Enhanced Security", Desc = "Advanced security measures to protect vehicles and ensure peace of mind.", Color = "danger", Percentage = "92" },
             new { Icon = "cash-coin", Title = "Automated Billing", Desc = "Streamlined payment processes for hassle-free transactions.", Color = "secondary", Percentage = "88" }
             };
             }
@@ -105,48 +105,59 @@
     </div>
 </section>
 
-<!-- Testimonials Section -->
-<section class="testimonials-section py-6 bg-light">
+<!-- Pricing Section -->
+<section id="pricing" class="pricing-section py-6 bg-light">
     <div class="container">
         <div class="row justify-content-center mb-5">
             <div class="col-lg-6 text-center">
-                <h2 class="display-4 fw-bold mb-3">What Our Clients Say</h2>
-                <p class="lead text-muted">Hear from businesses that have transformed their parking operations with Garage 2.0</p>
+                <h2 class="display-4 fw-bold mb-3">Choose Your Plan</h2>
+                <p class="lead text-muted">Flexible pricing tailored to your needs</p>
             </div>
         </div>
-        <div class="row g-4">
-            @{
-                var testimonials = new[]
-                {
-            new { Name = "John Doe", Company = "TechCorp", Quote = "Garage 2.0 has revolutionized our office parking. The smart allocation system has eliminated congestion and improved employee satisfaction." },
-            new { Name = "Jane Smith", Company = "City Mall", Quote = "The analytics dashboard provides invaluable insights into our parking trends, helping us optimize our space and increase revenue." },
-            new { Name = "Mike Johnson", Company = "Airport Authority", Quote = "The enhanced security features have significantly reduced incidents in our parking facilities. It's a game-changer for us." }
-            };
-            }
-            @foreach (var testimonial in testimonials)
-            {
-                <div class="col-md-4">
-                    <div class="testimonial-card h-100 p-4 bg-white rounded-lg shadow-sm">
-                        <div class="mb-3">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <i class="bi bi-star-fill text-warning"></i>
-                        </div>
-                        <p class="mb-4">"@testimonial.Quote"</p>
-                        <div class="d-flex align-items-center">
-                            <div class="avatar me-3">
-                                <img src="https://via.placeholder.com/50" alt="@testimonial.Name" class="rounded-circle">
-                            </div>
-                            <div>
-                                <h5 class="mb-0">@testimonial.Name</h5>
-                                <small class="text-muted">@testimonial.Company</small>
-                            </div>
-                        </div>
+
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="card pricing-card shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <h3 class="card-title mb-3">Basic</h3>
+                        <p class="display-5 fw-bold">$9.99<span class="fs-6 text-muted">/month</span></p>
+                        <ul class="list-unstyled text-muted mb-4">
+                            <li>10 Parking Spaces</li>
+                            <li>Basic Analytics</li>
+                            <li>Email Support</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary rounded-pill px-4 py-2">Get Started</a>
                     </div>
                 </div>
-            }
+            </div>
+            <div class="col-md-4">
+                <div class="card pricing-card shadow-lg border-primary h-100">
+                    <div class="card-body text-center p-4">
+                        <h3 class="card-title mb-3">Pro</h3>
+                        <p class="display-5 fw-bold">$19.99<span class="fs-6 text-muted">/month</span></p>
+                        <ul class="list-unstyled text-muted mb-4">
+                            <li>50 Parking Spaces</li>
+                            <li>Advanced Analytics</li>
+                            <li>Priority Support</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary rounded-pill px-4 py-2">Get Started</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card pricing-card shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <h3 class="card-title mb-3">Enterprise</h3>
+                        <p class="display-5 fw-bold">Custom Pricing</p>
+                        <ul class="list-unstyled text-muted mb-4">
+                            <li>Unlimited Parking Spaces</li>
+                            <li>Dedicated Account Manager</li>
+                            <li>Custom Integrations</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary rounded-pill px-4 py-2">Contact Us</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -201,20 +212,17 @@
     }
 
     @@keyframes gradient {
-        0%
+        0% {
+            background-position: 0% 50%;
+        }
 
-    {
-        background-position: 0% 50%;
-    }
+        50% {
+            background-position: 100% 50%;
+        }
 
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-
+        100% {
+            background-position: 0% 50%;
+        }
     }
 
     .feature-grid {
@@ -226,8 +234,22 @@
 
     .features-section {
         padding: 5rem 0;
-        background-color: #f8fafc;
+        background- color: #f8fafc;
     }
+    /* Pricing Card Styles */
+    .pricing-card {
+        border-radius: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .pricing-card.border-primary {
+            border: 2px solid #4f46e5;
+        }
 
     .modern-card {
         background: white;
@@ -293,18 +315,15 @@
     }
 
     @@media (max-width: 768px) {
-        .py-6
+        .py-6 {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
 
-    {
-        padding-top: 3rem;
-        padding-bottom: 3rem;
-    }
-
-    .g-4 {
-        --bs-gutter-x: 1.5rem;
-        --bs-gutter-y: 1.5rem;
-    }
-
+        .g-4 {
+            --bs-gutter-x: 1.5rem;
+            --bs-gutter-y: 1.5rem;
+        }
     }
 
     .glass-card {
@@ -338,13 +357,10 @@
     }
 
     @@keyframes fadeIn {
-        to
-
-    {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .hover-scale {
@@ -376,16 +392,13 @@
     }
 
     @@keyframes wave {
-        from
+        from {
+            transform: translateY(0);
+        }
 
-    {
-        transform: translateY(0);
-    }
-
-    to {
-        transform: translateY(10px);
-    }
-
+        to {
+            transform: translateY(10px);
+        }
     }
 
     /* Testimonials */
