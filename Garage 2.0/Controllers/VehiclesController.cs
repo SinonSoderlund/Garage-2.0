@@ -49,6 +49,7 @@ namespace Garage_2._0.Controllers
         // Start Feature: Search area
         public async Task<IActionResult> SearchByRegNumber(string searchField)
         {
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             if (!string.IsNullOrEmpty(searchField))
             {
                 var results = _context.Vehicle.Where(v => v.RegNr.Contains(searchField));
@@ -67,6 +68,7 @@ namespace Garage_2._0.Controllers
 
         public async Task<IActionResult> SortByDateAscending()
         {
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             var sortedVehicles = await _context.Vehicle
                 .OrderBy(v => v.ArriveTime)
                 .ToListAsync();
@@ -77,6 +79,7 @@ namespace Garage_2._0.Controllers
 
         public async Task<IActionResult> SortByDateDescending()
         {
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             var sortedVehicles = await _context.Vehicle
                 .OrderByDescending(v => v.ArriveTime)
                 .ToListAsync();
@@ -90,6 +93,7 @@ namespace Garage_2._0.Controllers
         // Start: Filter by Vehicle type
         public async Task<IActionResult> FilterByVehicleType(string vehicleType)
         {
+            ViewBag.VehicleTypes = await _context.VehicleTypes.ToListAsync();
             if (!string.IsNullOrEmpty(vehicleType))
             {
                 var filteredVehicles = _context.Vehicle
@@ -179,7 +183,7 @@ namespace Garage_2._0.Controllers
 
                 await _feedbackRepository.SetMessage(new FeedbackMessage(
                     $"Vehicle (registration number {newVehicle.RegNr}) sucessfully parked!", AlertType.success));
-                return View(vehicle);
+                return RedirectToAction(nameof(Index));
             }
 
             // If we got here, something went wrong and ModelState is invalid
@@ -204,19 +208,21 @@ namespace Garage_2._0.Controllers
         {
             if (id == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.",
+                    AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to View this vehicle.", AlertType.danger));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to View this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -229,19 +235,21 @@ namespace Garage_2._0.Controllers
         {
             if (id == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.",
+                    AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -259,15 +267,16 @@ namespace Garage_2._0.Controllers
                 return NotFound();
             }
 
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to Edit this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -321,19 +330,21 @@ namespace Garage_2._0.Controllers
         {
             if (id == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.", AlertType.danger));
+                await _feedbackRepository.SetMessage(new FeedbackMessage($"Invalid request. Vehicle not found.",
+                    AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -346,20 +357,22 @@ namespace Garage_2._0.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckOutConfirmed(int id)
         {
-            var userId = _userManager.GetUserId(User); 
-            var isAdmin = User.IsInRole("Admin"); 
+            var userId = _userManager.GetUserId(User);
+            var isAdmin = User.IsInRole("Admin");
 
             var vehicle = await _context.Vehicle
                 .FirstOrDefaultAsync(m => m.Id == id && (m.UserId == userId || isAdmin));
 
             if (vehicle == null)
             {
-                await _feedbackRepository.SetMessage(new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
+                await _feedbackRepository.SetMessage(
+                    new FeedbackMessage($"You are not authorized to Check-out this vehicle.", AlertType.danger));
                 return RedirectToAction(nameof(Index));
             }
 
             _context.Vehicle.Remove(vehicle);
-            await _feedbackRepository.SetMessage(new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
+            await _feedbackRepository.SetMessage(
+                new FeedbackMessage($"Vehicle (registration number {vehicle.RegNr}) Checked Out", AlertType.info));
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
